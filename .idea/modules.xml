@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.gradle/8.6/dependencies-accessors/d7f838bb16dc243bdd05bfa8f75ef956f6209f3c/d7f838bb16dc243bdd05bfa8f75ef956f6209f3c.iml" filepath="$PROJECT_DIR$/.gradle/8.6/dependencies-accessors/d7f838bb16dc243bdd05bfa8f75ef956f6209f3c/d7f838bb16dc243bdd05bfa8f75ef956f6209f3c.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/src/main/main.iml" filepath="$PROJECT_DIR$/app/src/main/main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/src/test/test.iml" filepath="$PROJECT_DIR$/app/src/test/test.iml" />
+    </modules>
+  </component>
+</project>

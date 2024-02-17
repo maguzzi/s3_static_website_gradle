@@ -1,0 +1,68 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Static website hosted on S3 bootstrap",
+    "Outputs": {
+        "ArtifactS3Bucket": {
+            "Description": "ID of the bucket for the lambda artifacts",
+            "Value": { "Ref": "LambdaArtifactBucket" },
+            "Export": {
+                "Name": { "Fn::Join" : ["-",[{ "Fn::Sub": "${AWS::StackName}-LambdaArtifactBucket-Export" },{"Ref":"Environment"}]]}
+            }
+        },
+        "CompiledTemplateBucket": {
+            "Description": "ID of the bucket for the compiled templates",
+            "Value": { "Ref": "CompiledTemplateBucket" },
+            "Export": {
+                "Name": { "Fn::Join" : ["-",[{ "Fn::Sub": "${AWS::StackName}-CompiledTemplateBucket-Export" },{"Ref":"Environment"}]]}
+            }
+        }
+
+    },
+    "Parameters": {
+        "ArtifactS3BucketName": {
+            "Description": "S3 bucket to store lambda artifacts",
+            "Type": "String",
+            "Default":"s3-static-website-lambda-artifact-bucket"
+        },
+        "CompiledTemplateBucketName": {
+            "Description": "S3 bucket to store compiled templates",
+            "Type": "String",
+            "Default":"s3-static-website-compiled-template-bucket"
+        },
+        "Environment": {
+            "Description": "Environment",
+            "Type": "String",
+            "AllowedValues": ["dev","prod"]
+        }
+    },
+    "Resources": {
+        "LambdaArtifactBucket": {
+            "Properties": {
+                "BucketName": {
+                    "Fn::Join":["-",[{"Ref": "ArtifactS3BucketName"},{"Ref":"Environment"}]]
+                },
+                "Tags": [
+                    {
+                        "Key":"Environment",
+                        "Value" : {"Ref":"Environment"}
+                    }
+                ]
+            },
+            "Type": "AWS::S3::Bucket"
+        },
+        "CompiledTemplateBucket": {
+            "Properties": {
+                "BucketName": {
+                    "Fn::Join":["-",[{"Ref": "CompiledTemplateBucketName"},{"Ref":"Environment"}]]
+                },
+                "Tags": [
+                    {
+                        "Key":"Environment",
+                        "Value" : {"Ref":"Environment"}
+                    }
+                ]
+            },
+            "Type": "AWS::S3::Bucket"
+        }
+    }
+}

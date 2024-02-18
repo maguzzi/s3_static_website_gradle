@@ -1,9 +1,10 @@
-package org.example.commands;
+package org.example.commands.cloudformation;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.example.App;
+import org.example.commands.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,12 +16,14 @@ import software.amazon.awssdk.services.cloudformation.model.ListStacksResponse;
 import software.amazon.awssdk.services.cloudformation.model.StackSummary;
 import software.amazon.awssdk.services.cloudformation.model.Stack;
 
-public class ListStacksCommand extends AbstractCommand implements Command {
+public class ListStacksCommand implements Command {
 
     private static final Logger logger = LoggerFactory.getLogger(ListStacksCommand.class);
 
+    private CloudFormationClient cloudFormationClient;
+
     public ListStacksCommand(CloudFormationClient cloudFormationClient) {
-        super(cloudFormationClient);
+        this.cloudFormationClient = cloudFormationClient;
     }
 
     @Override

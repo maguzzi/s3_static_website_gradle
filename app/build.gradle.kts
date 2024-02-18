@@ -20,6 +20,7 @@ dependencies {
     // AWS 
     implementation(platform("software.amazon.awssdk:bom:2.20.56"))
     implementation("software.amazon.awssdk:cloudformation")
+    implementation("software.amazon.awssdk:s3")
     
     implementation(platform("org.apache.logging.log4j:log4j-bom:2.20.0"))
     implementation("org.apache.logging.log4j:log4j-slf4j2-impl")

@@ -1,5 +1,7 @@
 package org.example.commands;
 
+import java.util.Map;
+
 public interface Command {
-    public void execute() throws Exception;
+    public Map<String,String> execute() throws Exception;
 }

@@ -1,10 +1,11 @@
-package org.example.commands;
+package org.example.commands.cloudformation;
 
 import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.example.App;
+import org.example.commands.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,30 +17,26 @@ import software.amazon.awssdk.services.cloudformation.model.DescribeStacksRespon
 import software.amazon.awssdk.services.cloudformation.model.Parameter;
 import software.amazon.awssdk.services.cloudformation.model.Tag;
 
-public class CreateStackCommand extends AbstractCommand implements Command {
+public class CreateStackCommand implements Command {
 
     private static final Logger logger = LoggerFactory.getLogger(CreateStackCommand.class);
 
     private static final String CREATE_COMPLETE = "CREATE_COMPLETE";
 
-    private final String environmentString;
-    private final String stackName;
-    private final String templatePathString;
+    private StackParams stackParams;
+    private final CloudFormationClient cloudFormationClient;
 
-    public CreateStackCommand(CloudFormationClient cloudFormationClient,String environmentString,String templatePathString,String stackName) {
-        super(cloudFormationClient);
-
-        this.environmentString = environmentString;
-        this.stackName = stackName;
-        this.templatePathString = templatePathString;
+    public CreateStackCommand(CloudFormationClient cloudFormationClient,StackParams stackParams) {
+        this.cloudFormationClient = cloudFormationClient;
+        this.stackParams = stackParams;
     }
 
     @Override
     public void execute() throws Exception {
-        App.screenMessage(String.format("%s - %s CREATION START",stackName,environmentString));
+        App.screenMessage(String.format("%s - %s CREATION START",stackParams.getStackName(),stackParams.getEnvironmentString()));
 
         // TODO file inside the jar
-        Path templatePath = Paths.get(templatePathString);
+        Path templatePath = Paths.get(stackParams.getTemplatePath());
 
         logger.info("reading template from: {}",templatePath.toAbsolutePath());
 
@@ -48,29 +45,31 @@ public class CreateStackCommand extends AbstractCommand implements Command {
         Parameter environment = Parameter
             .builder()
             .parameterKey(App.ENVIRONMENT_PARAMETER_KEY)
-            .parameterValue(environmentString)
+            .parameterValue(stackParams.getEnvironmentString())
             .build();
 
-        String stackFullName = stackName+"-"+environmentString;
+        String stackFullName = stackParams.getStackName()+"-"+stackParams.getEnvironmentString();
 
         CreateStackRequest request = CreateStackRequest.builder()
             .stackName(stackFullName)
             .templateBody(templateBody)
             .parameters(environment)
-            .tags(Tag.builder().key(App.S3_STATIC_WEBSITE_ENVIRONMENT_TAG).value(environmentString).build())
+            .tags(Tag.builder().key(App.S3_STATIC_WEBSITE_ENVIRONMENT_TAG).value(stackParams.getEnvironmentString()).build())
             .build();
 
         CreateStackResponse response = cloudFormationClient.createStack(request);
 
+        // TODO timeout check
         boolean creationComplete = checkIfStackIsCompleted(stackFullName);
         while (!creationComplete) {
             logger.info("Stack {} not yet completed, wait",stackFullName);
             creationComplete = checkIfStackIsCompleted(stackFullName);
+            Thread.sleep(5000);
         } 
         
         logger.info("Created stack {}",response.stackId());
         
-        App.screenMessage(String.format("%s - %s CREATION END",stackName,environmentString));
+        App.screenMessage(String.format("%s - %s CREATION END",stackParams.getStackName(),stackParams.getEnvironmentString()));
     }
 
     private boolean checkIfStackIsCompleted(String stackFullName) {

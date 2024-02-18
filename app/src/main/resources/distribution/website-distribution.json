@@ -1,0 +1,346 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    
+    "Conditions": {
+        "AlterativeDomainNotPresent": {
+            "Fn::Equals": [
+                "",
+                {
+                    "Ref": "AlternativeDomainNameParameter"
+                }
+            ]
+        }
+    },
+    "Description": "Static website based on private S3, cloudfront distribution and public https certificate",
+    "Mappings": {
+        "CacheMapping": {
+            "Global": {
+                "CachingOptimized": "658327ea-f89d-4fab-a63d-7e88639e58f6"
+            }
+        },
+        "HostedZoneId": {
+            "Global": {
+                "Cloudfront": "Z2FDTNDATAQYW2"
+            }
+        }
+    },
+    "Outputs": {
+        "CloudFrontDistributionId": {
+            "Description": "ID of the CloudFront distribution",
+            "Value": { "Fn::GetAtt": ["CloudFrontDistribution", "Id"] },
+            "Export": {
+                "Name": { "Fn::Join": ["-", [{ "Fn::Sub": "${AWS::StackName}-CloudFrontDistributionId" }, { "Ref": "Environment" }]]}
+            }
+        },
+        "S3BucketWebsite": {
+            "Description": "Arn for the S3 bucket that contains the actual website",
+            "Value": { "Fn::GetAtt": ["WebsiteBucket", "Arn"] },
+            "Export": {
+                "Name": { "Fn::Join": ["-", [{ "Fn::Sub": "${AWS::StackName}-WebsiteBucketArn" }, { "Ref": "Environment" }]]}
+            }
+        }
+    },
+    "Parameters": {
+        "Environment": {
+            "Description": "Website distribution environment",
+            "Type": "String",
+            "Default" : "dev",
+            "AllowedValues" : ["dev", "prod"]
+        },
+        "ZipDate": {
+            "Description": "Date of the zip artifact",
+            "Type": "String"
+        },
+        "BootstrapArtifactS3BucketNameExportName": {
+            "Description": "Exported variable name containing the bucket name for the lambda artifacts",
+            "Type": "String"
+        },
+        "AlternativeDomainNameParameter": {
+            "Description": "Alternative Domain Name (such as www.yourdomain.com)",
+            "Type": "String"
+        },
+        "DomainNameParameter": {
+            "Description": "Domain Name (such as yourdomain.com)",
+            "Type": "String"
+        },
+        "S3BucketNameParameter": {
+            "Description": "S3 Bucket Name (should be Domain Name-website)",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "LambdaEdgeCloudFrontStack":{
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL":"lambda-edge/lambda-edge.yaml",
+                "Parameters": {
+                    "Environment": { "Ref": "Environment" },
+                    "ZipDate": { "Ref": "ZipDate" },
+                    "BootstrapArtifactS3BucketNameExportName": { "Ref": "BootstrapArtifactS3BucketNameExportName" }
+                }
+            }
+        },
+        "AcmCertificate": {
+            "Properties": {
+                "DomainName": {
+                    "Ref": "DomainNameParameter"
+                },
+                "DomainValidationOptions": [
+                    {
+                        "DomainName": {
+                            "Ref": "DomainNameParameter"
+                        },
+                        "HostedZoneId": {
+                            "Ref": "HostedZone"
+                        }
+                    }
+                ],
+                "SubjectAlternativeNames": {
+                    "Fn::If": [
+                        "AlterativeDomainNotPresent",
+                        [],
+                        [
+                            {
+                                "Ref": "AlternativeDomainNameParameter"
+                            }
+                        ]
+                    ]
+                },
+                "ValidationMethod": "DNS"
+            },
+            "Type": "AWS::CertificateManager::Certificate"
+        },
+        "CloudFrontDistribution": {
+            "DependsOn": [
+                "CloudFrontOAI",
+                "AcmCertificate"
+            ],
+            "Properties": {
+                "DistributionConfig": {
+                    "Comment": {
+                        "Fn::Join": [" ", ["CloudFront distribution for", { "Ref": "Environment" }]]
+                    },
+                    "CustomErrorResponses":[
+                        {
+                            "ErrorCode" : 403,
+                            "ResponseCode" : 200,
+                            "ResponsePagePath" : "/errors/403.html"
+                        }
+                    ],
+                    "Aliases": {
+                        "Fn::If": [
+                            "AlterativeDomainNotPresent",
+                            [
+                                {
+                                    "Ref": "DomainNameParameter"
+                                }
+                            ],
+                            [
+                                {
+                                    "Ref": "DomainNameParameter"
+                                },
+                                {
+                                    "Ref": "AlternativeDomainNameParameter"
+                                }
+                            ]
+                        ]
+                    },
+                    "DefaultCacheBehavior": {
+                        "Compress": true,
+                        "AllowedMethods": [
+                            "GET",
+                            "HEAD",
+                            "OPTIONS",
+                            "PUT",
+                            "PATCH",
+                            "POST",
+                            "DELETE"
+                        ],
+                        "CachedMethods": [
+                            "GET",
+                            "HEAD",
+                            "OPTIONS"
+                        ],
+                        "CachePolicyId": {
+                            "Fn::FindInMap": [
+                                "CacheMapping",
+                                "Global",
+                                "CachingOptimized"
+                            ]
+                        },
+                        "TargetOriginId": "myS3Origin",
+                        "ViewerProtocolPolicy": "redirect-to-https",
+                        "LambdaFunctionAssociations": [
+                            {
+                                "EventType": "viewer-request",
+                                "LambdaFunctionARN": {
+                                    "Fn::GetAtt": ["LambdaEdgeCloudFrontStack", "Outputs.LambdaFunctionVersionOutput"]
+                                }
+                            }
+                        ]
+                    },
+                    "DefaultRootObject": "index.html",
+                    "Enabled": true,
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Ref": "S3BucketNameParameter"
+                                        },
+                                        ".s3.us-east-1.amazonaws.com"
+                                    ]
+                                ]
+                            },
+                            "Id": "myS3Origin",
+                            "S3OriginConfig": {
+                                "OriginAccessIdentity": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "origin-access-identity/cloudfront/",
+                                            {
+                                                "Ref": "CloudFrontOAI"
+                                            }
+                                        ]
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "ViewerCertificate": {
+                        "AcmCertificateArn": {
+                            "Ref": "AcmCertificate"
+                        },
+                        "MinimumProtocolVersion": "TLSv1",
+                        "SslSupportMethod": "sni-only"
+                    }
+                }
+            },
+            "Type": "AWS::CloudFront::Distribution"
+        },
+        "CloudFrontOAI": {
+            "Properties": {
+                "CloudFrontOriginAccessIdentityConfig": {
+                    "Comment": "OAI for Cloudfront"
+                }
+            },
+            "Type": "AWS::CloudFront::CloudFrontOriginAccessIdentity"
+        },
+        "HostedZone": {
+            "Properties": {
+                "HostedZoneConfig": {
+                    "Comment": "HostedZone for Website"
+                },
+                "Name": {
+                    "Ref": "DomainNameParameter"
+                },
+                "HostedZoneTags": [
+                    {
+                        "Key" : "env",
+                        "Value" : { "Ref":"Environment" }
+                    }
+                ]
+            },
+            "Type": "AWS::Route53::HostedZone"
+        },
+        "Route53Records": {
+            "DependsOn": "CloudFrontDistribution",
+            "Properties": {
+                "AliasTarget": {
+                    "DNSName": {
+                        "Fn::GetAtt": [
+                            "CloudFrontDistribution",
+                            "DomainName"
+                        ]
+                    },
+                    "HostedZoneId": {
+                        "Fn::FindInMap": [
+                            "HostedZoneId",
+                            "Global",
+                            "Cloudfront"
+                        ]
+                    }
+                },
+                "Comment": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "Alias record for ",
+                            {
+                                "Ref": "DomainNameParameter"
+                            },
+                            "website"
+                        ]
+                    ]
+                },
+                "HostedZoneId": {
+                    "Ref": "HostedZone"
+                },
+                "Name": {
+                    "Ref": "DomainNameParameter"
+                },
+                "Type": "A"
+            },
+            "Type": "AWS::Route53::RecordSet"
+        },
+        "S3AccessFromCloudFrontPolicy": {
+            "DependsOn": [
+                "CloudFrontOAI",
+                "WebsiteBucket"
+            ],
+            "Properties": {
+                "Bucket": {
+                    "Ref": "S3BucketNameParameter"
+                },
+                "PolicyDocument": {
+                    "Id": "PolicyForCloudFrontPrivateContent",
+                    "Statement": [
+                        {
+                            "Action": "s3:GetObject",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ",
+                                            {
+                                                "Ref": "CloudFrontOAI"
+                                            }
+                                        ]
+                                    ]
+                                }
+                            },
+                            "Resource": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        "arn:aws:s3:::",
+                                        {
+                                            "Ref": "S3BucketNameParameter"
+                                        },
+                                        "/*"
+                                    ]
+                                ]
+                            },
+                            "Sid": "1"
+                        }
+                    ],
+                    "Version": "2008-10-17"
+                }
+            },
+            "Type": "AWS::S3::BucketPolicy"
+        },
+        "WebsiteBucket": {
+            "Properties": {
+                "BucketName": {
+                    "Ref": "S3BucketNameParameter"
+                }
+            },
+            "Type": "AWS::S3::Bucket"
+        }
+    }
+}

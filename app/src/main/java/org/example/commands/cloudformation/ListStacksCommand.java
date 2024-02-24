@@ -1,6 +1,8 @@
 package org.example.commands.cloudformation;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.example.App;
@@ -27,7 +29,7 @@ public class ListStacksCommand implements Command {
     }
 
     @Override
-    public void execute() throws Exception {
+    public Map<String,String> execute() throws Exception {
 
         App.screenMessage("LIST STACK START");
 
@@ -46,6 +48,7 @@ public class ListStacksCommand implements Command {
         }
 
         App.screenMessage("LIST STACK END");
+        return new HashMap<String,String>();
     }
 
 }

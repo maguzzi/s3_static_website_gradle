@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Lambda@Edge function stack
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+        - dev
+        - prod
+  ZipDate:
+    Type: String
+  BootstrapArtifactS3BucketNameExportName:
+    Type: String
+Resources:
+  LambdaEdge:
+    Properties:
+      Runtime: nodejs20.x
+      Handler: index.handler  
+      Code:
+         S3Bucket:
+           Fn::ImportValue: 
+             !Ref BootstrapArtifactS3BucketNameExportName
+         S3Key: !Join [ "", [ "lambda-edge-", !Ref Environment, "-", !Ref ZipDate ,".zip"] ]
+      Role: !GetAtt LambdaRoleForCF.Arn
+    Type: "AWS::Lambda::Function"
+     
+  LambdaFunctionVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref LambdaEdge
+      Description: !Ref ZipDate
+
+  LambdaRoleForCF:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Join [ "-", [ "LambdaRoleForCF", !Ref Environment ] ]
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+                - edgelambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+Outputs:
+  LambdaFunctionVersionOutput:
+    Description: LambdaFunctionVersion Arn
+    Value:
+      Ref: LambdaFunctionVersion

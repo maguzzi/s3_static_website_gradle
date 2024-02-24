@@ -26,9 +26,11 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-slf4j2-impl")
     implementation("org.apache.logging.log4j:log4j-1.2-api")
 
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.16.0")
+
     // Use JUnit Jupiter for testing.
     testImplementation(libs.junit.jupiter)
-
+    
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     // This dependency is used by the application.

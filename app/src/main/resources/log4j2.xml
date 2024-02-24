@@ -18,7 +18,7 @@
             <AppenderRef ref="LogToConsole"/>
         </Logger>
 
-        <Root level="debug">
+        <Root level="trace">
             <AppenderRef ref="LogToConsole"/>
         </Root>
 

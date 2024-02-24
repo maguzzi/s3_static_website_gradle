@@ -5,6 +5,9 @@ import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+
 import org.example.commands.Command;
 import org.example.commands.CommandFactory;
 import org.slf4j.Logger;
@@ -37,6 +40,9 @@ public class App {
 
         Command listStacksCommand = CommandFactory.createList(this);
         Command createStackCommand = CommandFactory.createBootstrap(this);
+        Command getOutputFromStack = CommandFactory.createGetOutputFromBootstrapStack(this);
+        Command uploadLambdaNestedStackTemplateFileToBucket = CommandFactory.createUploadLambdaNestedStackTemplateFileToBucket(this);
+        Command uploadLambdaNestedStackSourceCodeFileToBucket = CommandFactory.createUploadLambdaNestedStackSourceCodeFileToBucket(this);
         
         switch (command) {
             case "LIST": {
@@ -48,12 +54,22 @@ public class App {
                 break;
             }
             case "DISTRIBUTION": {
+                Map<String,String> result1 = getOutputFromStack.execute();
+                mapToString(result1);
+                Map<String,String> result2 = uploadLambdaNestedStackTemplateFileToBucket.execute();
+                mapToString(result2);
+                Map<String,String> result3 = uploadLambdaNestedStackSourceCodeFileToBucket.execute();
+                mapToString(result3);
                 
                 break;
             }
             
 
         }
+    }
+
+    private void mapToString(Map<String,String> result) {
+        result.entrySet().forEach(e -> logger.debug("{} -> {}",e.getKey(),e.getValue()));
     }
 
     public static void main(String[] args) {

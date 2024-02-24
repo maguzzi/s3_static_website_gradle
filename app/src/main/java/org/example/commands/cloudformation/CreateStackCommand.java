@@ -9,6 +9,9 @@ import org.example.commands.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.CreateStackRequest;
 import software.amazon.awssdk.services.cloudformation.model.CreateStackResponse;
@@ -32,7 +35,7 @@ public class CreateStackCommand implements Command {
     }
 
     @Override
-    public void execute() throws Exception {
+    public Map<String,String> execute() throws Exception {
         App.screenMessage(String.format("%s - %s CREATION START",stackParams.getStackName(),stackParams.getEnvironmentString()));
 
         // TODO file inside the jar
@@ -70,6 +73,10 @@ public class CreateStackCommand implements Command {
         logger.info("Created stack {}",response.stackId());
         
         App.screenMessage(String.format("%s - %s CREATION END",stackParams.getStackName(),stackParams.getEnvironmentString()));
+
+        Map<String,String> result = new HashMap<String,String>();
+
+        return result;
     }
 
     private boolean checkIfStackIsCompleted(String stackFullName) {

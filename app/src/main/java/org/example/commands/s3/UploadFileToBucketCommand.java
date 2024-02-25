@@ -38,17 +38,17 @@ public class UploadFileToBucketCommand implements Command {
     @Override
     public Map<String,String> execute() throws Exception {
         App.screenMessage("UPLOAD FILE TO BUCKET START");
-        logger.debug("{} --> {}/{}",s3Params.getInputPath(),s3Params.getS3Bucket(),s3Params.getS3Key());
+        logger.info("{} --> {}/{}",s3Params.getInputPath(),s3Params.getS3Bucket(),s3Params.getS3Key());
         PutObjectResponse putObjectResponse = s3Client.putObject(PutObjectRequest.builder()
         .bucket(s3Params.getS3Bucket())
         .key(s3Params.getS3Key())
         .build(),
         RequestBody.fromFile(Paths.get(s3Params.getInputPath())));
-        logger.trace(putObjectResponse.toString());
+        logger.debug(putObjectResponse.toString());
         
         URL url = s3Client.utilities().getUrl(GetUrlRequest.builder().bucket(s3Params.getS3Bucket()).key(s3Params.getS3Key()).build());
 
-        logger.debug("URL: {}",url);
+        logger.info("URL: {}",url);
 
         Map<String,String> outputMap = new HashMap<String,String>();
         outputMap.put(REMOTE_FILE_URL,url.toString());

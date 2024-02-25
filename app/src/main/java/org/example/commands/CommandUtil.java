@@ -25,11 +25,14 @@ public class CommandUtil {
     }
 
     // TODO better with try-with-resources
-    public static String zipFile(String sourceFile, String zipFile) throws Exception {
+    public static String zipFile(String sourceFile, String zipFileName) throws Exception {
         FileInputStream fis = null;
         FileOutputStream fos = null;
         ZipOutputStream zipOut = null;
+        Path tmpDir = null;
         try {
+            tmpDir = Files.createTempDirectory("cloudformation_tmp");
+            File zipFile = new File(tmpDir.toAbsolutePath()+File.separator+zipFileName);
             fos = new FileOutputStream(zipFile);
             zipOut = new ZipOutputStream(fos);
 
@@ -43,7 +46,7 @@ public class CommandUtil {
             while ((length = fis.read(bytes)) >= 0) {
                 zipOut.write(bytes, 0, length);
             }
-            return Paths.get(zipFile).toAbsolutePath().toString();
+            return zipFile.getAbsolutePath();
         } catch (IOException ioe) {
             throw new Exception(ioe);
         } finally {

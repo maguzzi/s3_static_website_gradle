@@ -5,6 +5,7 @@ public class StackParams {
     private String templatePath;
     private String stackName;
 
+    // TODO make builder
     public StackParams(String environmentString,String templatePath,String stackName) {
         this.environmentString = environmentString;
         this.templatePath = templatePath;
@@ -22,4 +23,6 @@ public class StackParams {
     public String getStackName() {
         return this.stackName;
     }
+
 }
+

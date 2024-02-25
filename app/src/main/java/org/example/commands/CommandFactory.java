@@ -8,13 +8,16 @@ import org.example.commands.cloudformation.CreateStackCommand;
 import org.example.commands.cloudformation.GetOutputFromStack;
 import org.example.commands.cloudformation.ListStacksCommand;
 import org.example.commands.cloudformation.StackParams;
+import org.example.commands.misc.PackageTemplateCommand;
 import org.example.commands.s3.S3Params;
 import org.example.commands.s3.UploadFileToBucketCommand;
 
 public class CommandFactory {
 
     private static final String BOOTSTRAP_STACK_NAME = "s3-static-website-bootstrap-stack";
+    // TODO refactor fixed s3 bucket / keys
     private static final String S3_STATIC_WEBSITE_COMPILED_TEMPLATE_BUCKET = "s3-static-website-compiled-template-bucket";
+    // TODO refactor fixed s3 bucket / keys
     private static final String S3_STATIC_WEBSITE_ARTIFACT_BUCKET = "s3-static-website-lambda-artifact-bucket";
 
     public static Command createBootstrap(App app) {
@@ -24,15 +27,23 @@ public class CommandFactory {
 
     // TODO fix path
     public static Command createUploadLambdaNestedStackTemplateFileToBucket(App app) {
-        String path = "./src/main/resources/distribution/lambda-edge.yaml";
+        String path = "./src/main/resources/distribution/lambda-edge/lambda-edge.yaml";
         S3Params s3Params = new S3Params(S3_STATIC_WEBSITE_COMPILED_TEMPLATE_BUCKET+"-"+app.getEnvironment(),
         new SimpleDateFormat("YYYYMMddHHmmss").format(new Date())+"_nested_lambda_stack.template", path);
         return new UploadFileToBucketCommand(app.getS3Client(), s3Params);
     }
 
-    public static Command createUploadLambdaNestedStackSourceCodeFileToBucket(App app) {
-        String path = "./src/main/resources/distribution/index.mjs";
+    public static Command createZipArtifactCommand(App app) throws Exception {
+        String sourcePath = "./src/main/resources/distribution/lambda-edge/index.mjs";
+        String zipFile = String.format("lambda-edge-%s-%s.zip",app.getEnvironment(),new SimpleDateFormat("yyyyMMdd"));
+        return new ZipArtifactCommand(sourcePath,zipFile);
+    }
+
+    public static Command createUploadLambdaNestedStackSourceCodeFileToBucket(App app) throws Exception {
+        
+        CommandUtil.zipFile(path, );
         S3Params s3Params = new S3Params(S3_STATIC_WEBSITE_ARTIFACT_BUCKET+"-"+app.getEnvironment(),
+        
         new SimpleDateFormat("YYYYMMddHHmmss").format(new Date())+"_index.mjs", path);
         return new UploadFileToBucketCommand(app.getS3Client(), s3Params);
     }
@@ -45,5 +56,7 @@ public class CommandFactory {
         return new ListStacksCommand(app.getCloudFormationClient());    
     }
 
-    
+    public static Command createPackageTemplateCommand(App app) {
+        return new PackageTemplateCommand("./src/main/resources/distribution/website-distribution.json");
+    }
 }

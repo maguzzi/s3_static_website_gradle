@@ -1,5 +1,6 @@
 package org.example.commands.s3;
 
+import java.net.URL;
 import java.nio.file.Paths;
 
 import org.example.App;
@@ -12,6 +13,7 @@ import java.util.Map;
 
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetUrlRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
@@ -19,8 +21,8 @@ public class UploadFileToBucketCommand implements Command {
 
     private static final Logger logger = LoggerFactory.getLogger(UploadFileToBucketCommand.class);
 
-    private static final String REMOTE_FILE_PATH="REMOTE_FILE_PATH";
-
+    public static final String REMOTE_FILE_URL="REMOTE_FILE_URL";
+    
     private S3Client s3Client;
     private S3Params s3Params;
 
@@ -39,9 +41,14 @@ public class UploadFileToBucketCommand implements Command {
         .build(),
         RequestBody.fromFile(Paths.get(s3Params.getInputPath())));
         logger.trace(putObjectResponse.toString());
-        App.screenMessage("UPLOAD FILE TO BUCKET END");
+        
+        URL url = s3Client.utilities().getUrl(GetUrlRequest.builder().bucket(s3Params.getS3Bucket()).key(s3Params.getS3Key()).build());
+
+        logger.debug("URL: {}",url);
+
         Map<String,String> outputMap = new HashMap<String,String>();
-        outputMap.put(REMOTE_FILE_PATH,s3Params.getS3Bucket()+"/"+s3Params.getS3Key());
+        outputMap.put(REMOTE_FILE_URL,url.toString());
+        App.screenMessage("UPLOAD FILE TO BUCKET END");
         return outputMap;
     }
 

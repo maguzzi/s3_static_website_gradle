@@ -6,6 +6,7 @@ import java.nio.file.Path;
 
 import org.example.App;
 import org.example.commands.Command;
+import org.example.commands.CommandUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,12 +39,7 @@ public class CreateStackCommand implements Command {
     public Map<String,String> execute() throws Exception {
         App.screenMessage(String.format("%s - %s CREATION START",stackParams.getStackName(),stackParams.getEnvironmentString()));
 
-        // TODO file inside the jar
-        Path templatePath = Paths.get(stackParams.getTemplatePath());
-
-        logger.info("reading template from: {}",templatePath.toAbsolutePath());
-
-        String templateBody = new String(Files.readAllBytes(templatePath));
+        String templateBody = CommandUtil.readFileContent(stackParams.getTemplatePath());
 
         Parameter environment = Parameter
             .builder()

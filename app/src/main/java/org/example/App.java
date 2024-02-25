@@ -6,11 +6,15 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.example.commands.Command;
 import org.example.commands.CommandFactory;
 import org.slf4j.Logger;
+
+import static org.example.commands.s3.UploadFileToBucketCommand.REMOTE_FILE_URL;
+import static org.example.commands.misc.PackageTemplateCommand.S3_PATH_TO_REPLACE;;
 
 public class App {
 
@@ -43,6 +47,7 @@ public class App {
         Command getOutputFromStack = CommandFactory.createGetOutputFromBootstrapStack(this);
         Command uploadLambdaNestedStackTemplateFileToBucket = CommandFactory.createUploadLambdaNestedStackTemplateFileToBucket(this);
         Command uploadLambdaNestedStackSourceCodeFileToBucket = CommandFactory.createUploadLambdaNestedStackSourceCodeFileToBucket(this);
+        Command compileTemplateCommand = CommandFactory.createPackageTemplateCommand(this);
         
         switch (command) {
             case "LIST": {
@@ -54,14 +59,25 @@ public class App {
                 break;
             }
             case "DISTRIBUTION": {
-                Map<String,String> result1 = getOutputFromStack.execute();
-                mapToString(result1);
-                Map<String,String> result2 = uploadLambdaNestedStackTemplateFileToBucket.execute();
-                mapToString(result2);
-                Map<String,String> result3 = uploadLambdaNestedStackSourceCodeFileToBucket.execute();
-                mapToString(result3);
+                Map<String,String> outputFromStackResult = getOutputFromStack.execute();
+                mapToString(outputFromStackResult);
                 
+                Map<String,String> uploadLambdaTemplateResult = uploadLambdaNestedStackTemplateFileToBucket.execute();
+                mapToString(uploadLambdaTemplateResult);
+                
+
+
+                Map<String,String> uploadLambdaArtifactResult = uploadLambdaNestedStackSourceCodeFileToBucket.execute();
+                mapToString(uploadLambdaArtifactResult);
+                
+                HashMap<String,Object> inputs= new HashMap<String,Object>();
+                inputs.put(S3_PATH_TO_REPLACE, uploadLambdaTemplateResult.get(REMOTE_FILE_URL));
+                compileTemplateCommand.setInputs(inputs);
+                Map<String, String> result4 = compileTemplateCommand.execute();
+                mapToString(result4);
                 break;
+
+
             }
             
 

@@ -22,13 +22,17 @@ public class UploadFileToBucketCommand implements Command {
     private static final Logger logger = LoggerFactory.getLogger(UploadFileToBucketCommand.class);
 
     public static final String REMOTE_FILE_URL="REMOTE_FILE_URL";
+    public static final String S3_PARAMS = "S3_PARAMS";
     
     private S3Client s3Client;
     private S3Params s3Params;
 
-    public UploadFileToBucketCommand(S3Client s3Client,S3Params s3Params) {
+    public UploadFileToBucketCommand(S3Client s3Client) {
         this.s3Client = s3Client;
-        this.s3Params = s3Params;
+    }
+
+    public void setInputs(Map<String,Object> inputs) {
+        this.s3Params = (S3Params)inputs.get(S3_PARAMS);
     }
 
     @Override

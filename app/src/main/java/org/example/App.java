@@ -6,14 +6,18 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.example.commands.Command;
 import org.example.commands.CommandFactory;
+import org.example.commands.misc.ZipArtifactCommand;
+import org.example.commands.s3.S3Params;
 import org.slf4j.Logger;
 
 import static org.example.commands.s3.UploadFileToBucketCommand.REMOTE_FILE_URL;
+import static org.example.commands.s3.UploadFileToBucketCommand.S3_PARAMS;
 import static org.example.commands.misc.PackageTemplateCommand.S3_PATH_TO_REPLACE;;
 
 public class App {
@@ -48,6 +52,7 @@ public class App {
         Command uploadLambdaNestedStackTemplateFileToBucket = CommandFactory.createUploadLambdaNestedStackTemplateFileToBucket(this);
         Command uploadLambdaNestedStackSourceCodeFileToBucket = CommandFactory.createUploadLambdaNestedStackSourceCodeFileToBucket(this);
         Command compileTemplateCommand = CommandFactory.createPackageTemplateCommand(this);
+        Command zipArtifactCommand = CommandFactory.createZipArtifactCommand(this);
         
         switch (command) {
             case "LIST": {
@@ -62,19 +67,29 @@ public class App {
                 Map<String,String> outputFromStackResult = getOutputFromStack.execute();
                 mapToString(outputFromStackResult);
                 
+                Map<String,String> outputFromZipArtifactCommand = zipArtifactCommand.execute();
+                mapToString(outputFromZipArtifactCommand);
+
+                HashMap<String,Object> inputs= new HashMap<String,Object>();
+                File outputPath = new File(outputFromZipArtifactCommand.get(ZipArtifactCommand.ARTIFACT_COMPRESSED_PATH));
+                S3Params s3Params = new S3Params(CommandFactory.S3_STATIC_WEBSITE_ARTIFACT_BUCKET+"-"+this.getEnvironment(),
+                outputPath.getName(), 
+                outputPath.getAbsolutePath());
+                inputs.put(S3_PARAMS, s3Params);
+                uploadLambdaNestedStackSourceCodeFileToBucket.setInputs(inputs);
+                Map<String,String> uploadLambdaArtifactResult = uploadLambdaNestedStackSourceCodeFileToBucket.execute();
+                mapToString(uploadLambdaArtifactResult);
+
                 Map<String,String> uploadLambdaTemplateResult = uploadLambdaNestedStackTemplateFileToBucket.execute();
                 mapToString(uploadLambdaTemplateResult);
                 
-
-
-                Map<String,String> uploadLambdaArtifactResult = uploadLambdaNestedStackSourceCodeFileToBucket.execute();
-                mapToString(uploadLambdaArtifactResult);
-                
-                HashMap<String,Object> inputs= new HashMap<String,Object>();
-                inputs.put(S3_PATH_TO_REPLACE, uploadLambdaTemplateResult.get(REMOTE_FILE_URL));
-                compileTemplateCommand.setInputs(inputs);
+                HashMap<String,Object> compileTemplateInputs= new HashMap<String,Object>();
+                compileTemplateInputs.put(S3_PATH_TO_REPLACE, uploadLambdaTemplateResult.get(REMOTE_FILE_URL));
+                compileTemplateCommand.setInputs(compileTemplateInputs);
                 Map<String, String> result4 = compileTemplateCommand.execute();
                 mapToString(result4);
+
+        
                 break;
 
 

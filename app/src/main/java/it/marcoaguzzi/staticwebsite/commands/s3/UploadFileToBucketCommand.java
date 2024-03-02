@@ -1,12 +1,14 @@
-package org.example.commands.s3;
+package it.marcoaguzzi.staticwebsite.commands.s3;
 
 import java.net.URL;
 import java.nio.file.Paths;
 
-import org.example.App;
-import org.example.commands.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.marcoaguzzi.staticwebsite.App;
+import it.marcoaguzzi.staticwebsite.commands.Command;
+import it.marcoaguzzi.staticwebsite.commands.cloudformation.OutputEntry;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +38,7 @@ public class UploadFileToBucketCommand implements Command {
     }
 
     @Override
-    public Map<String,String> execute() throws Exception {
+    public Map<String,OutputEntry> execute() throws Exception {
         App.screenMessage("UPLOAD FILE TO BUCKET START");
         logger.info("{} --> {}/{}",s3Params.getInputPath(),s3Params.getS3Bucket(),s3Params.getS3Key());
         PutObjectResponse putObjectResponse = s3Client.putObject(PutObjectRequest.builder()
@@ -50,8 +52,8 @@ public class UploadFileToBucketCommand implements Command {
 
         logger.info("URL: {}",url);
 
-        Map<String,String> outputMap = new HashMap<String,String>();
-        outputMap.put(REMOTE_FILE_URL,url.toString());
+        Map<String,OutputEntry> outputMap = new HashMap<>();
+        outputMap.put(REMOTE_FILE_URL, new OutputEntry(REMOTE_FILE_URL,url.toString()));
         App.screenMessage("UPLOAD FILE TO BUCKET END");
         return outputMap;
     }

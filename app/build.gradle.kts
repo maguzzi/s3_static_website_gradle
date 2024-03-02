@@ -30,8 +30,10 @@ dependencies {
 
     // Use JUnit Jupiter for testing.
     testImplementation(libs.junit.jupiter)
+    testImplementation("org.mockito:mockito-core:3.+")
     
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    
 
     // This dependency is used by the application.
     implementation(libs.guava)
@@ -46,7 +48,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = "org.example.App"
+    mainClass = "it.marcoaguzzi.staticwebsite.App"
 }
 
 tasks.named<Test>("test") {

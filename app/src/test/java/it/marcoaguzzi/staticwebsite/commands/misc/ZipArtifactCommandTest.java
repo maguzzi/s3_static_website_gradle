@@ -1,4 +1,4 @@
-package org.example.commands.misc;
+package it.marcoaguzzi.staticwebsite.commands.misc;
 
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;

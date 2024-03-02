@@ -1,33 +1,41 @@
-package org.example.commands;
+package it.marcoaguzzi.staticwebsite.commands;
 
-import static org.example.commands.s3.UploadFileToBucketCommand.S3_PARAMS;
+import static it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand.S3_PARAMS;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.example.App;
-import org.example.commands.cloudformation.CreateStackCommand;
-import org.example.commands.cloudformation.GetOutputFromStack;
-import org.example.commands.cloudformation.ListStacksCommand;
-import org.example.commands.cloudformation.StackParams;
-import org.example.commands.misc.PackageTemplateCommand;
-import org.example.commands.misc.ZipArtifactCommand;
-import org.example.commands.s3.S3Params;
-import org.example.commands.s3.UploadFileToBucketCommand;
+import it.marcoaguzzi.staticwebsite.App;
+import it.marcoaguzzi.staticwebsite.commands.cloudformation.CreateDistributionStackCommand;
+import it.marcoaguzzi.staticwebsite.commands.cloudformation.CreateStackCommand;
+import it.marcoaguzzi.staticwebsite.commands.cloudformation.GetOutputFromStack;
+import it.marcoaguzzi.staticwebsite.commands.cloudformation.ListStacksCommand;
+import it.marcoaguzzi.staticwebsite.commands.cloudformation.StackInfo;
+import it.marcoaguzzi.staticwebsite.commands.misc.PackageTemplateCommand;
+import it.marcoaguzzi.staticwebsite.commands.misc.ZipArtifactCommand;
+import it.marcoaguzzi.staticwebsite.commands.s3.S3Params;
+import it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand;
 
 public class CommandFactory {
 
     private static final String BOOTSTRAP_STACK_NAME = "s3-static-website-bootstrap-stack";
+    private static final String DISTRIBUTION_STACK_NAME = "s3-static-website-distribution-stack";
+
     // TODO refactor fixed s3 bucket / keys
     private static final String S3_STATIC_WEBSITE_COMPILED_TEMPLATE_BUCKET = "s3-static-website-compiled-template-bucket";
     // TODO refactor fixed s3 bucket / keys
     public static final String S3_STATIC_WEBSITE_ARTIFACT_BUCKET = "s3-static-website-lambda-artifact-bucket";
 
-    public static Command createBootstrap(App app) {
-        StackParams stackParams = new StackParams(app.getEnvironment(), "./src/main/resources/bootstrap/bootstrap.json", BOOTSTRAP_STACK_NAME);
+    public static Command createBootstrapStack(App app) {
+        StackInfo stackParams = new StackInfo(app.getEnvironment(), "./src/main/resources/bootstrap/bootstrap.json", BOOTSTRAP_STACK_NAME);
         return new CreateStackCommand(app.getCloudFormationClient(),stackParams);
+    }
+
+    public static Command createDistributionStack(App app) {
+        StackInfo stackParams = new StackInfo(app.getEnvironment(), "./src/main/resources/distribution/website-distribution.json", DISTRIBUTION_STACK_NAME);
+        return new CreateDistributionStackCommand(app.getCloudFormationClient(),stackParams);
     }
 
     // TODO fix path

@@ -1,15 +1,15 @@
-package org.example.commands.cloudformation;
+package it.marcoaguzzi.staticwebsite.commands.cloudformation;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.example.App;
-import org.example.commands.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.marcoaguzzi.staticwebsite.App;
+import it.marcoaguzzi.staticwebsite.commands.Command;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.DescribeStacksRequest;
 import software.amazon.awssdk.services.cloudformation.model.DescribeStacksResponse;
@@ -29,7 +29,7 @@ public class ListStacksCommand implements Command {
     }
 
     @Override
-    public Map<String,String> execute() throws Exception {
+    public Map<String,OutputEntry> execute() throws Exception {
 
         App.screenMessage("LIST STACK START");
 
@@ -48,7 +48,7 @@ public class ListStacksCommand implements Command {
         }
 
         App.screenMessage("LIST STACK END");
-        return new HashMap<String,String>();
+        return new HashMap<>();
     }
 
 }

@@ -1,12 +1,12 @@
-package org.example.commands.cloudformation;
+package it.marcoaguzzi.staticwebsite.commands.cloudformation;
 
-public class StackParams {
+public class StackInfo {
     private String environmentString;
     private String templatePath;
     private String stackName;
 
     // TODO make builder
-    public StackParams(String environmentString,String templatePath,String stackName) {
+    public StackInfo(String environmentString,String templatePath,String stackName) {
         this.environmentString = environmentString;
         this.templatePath = templatePath;
         this.stackName = stackName;

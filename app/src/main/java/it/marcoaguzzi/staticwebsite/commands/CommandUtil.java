@@ -1,4 +1,4 @@
-package org.example.commands;
+package it.marcoaguzzi.staticwebsite.commands;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -60,6 +62,14 @@ public class CommandUtil {
                 fos.close();
             }
         }
+    }
+
+    public static String dateToDay() {
+        return new SimpleDateFormat("yyyyMMdd").format(new Date());
+    }
+
+    public static String dateToSecond() {
+        return new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
     }
 
 }

@@ -1,4 +1,4 @@
-package org.example.commands.s3;
+package it.marcoaguzzi.staticwebsite.commands.s3;
 
 public class S3Params {
 

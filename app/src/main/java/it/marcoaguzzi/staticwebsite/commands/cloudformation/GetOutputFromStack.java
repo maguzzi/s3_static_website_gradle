@@ -1,9 +1,9 @@
-package org.example.commands.cloudformation;
+package it.marcoaguzzi.staticwebsite.commands.cloudformation;
 
-import org.example.commands.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.marcoaguzzi.staticwebsite.commands.Command;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.DescribeStacksRequest;
 import software.amazon.awssdk.services.cloudformation.model.DescribeStacksResponse;
@@ -26,13 +26,13 @@ public class GetOutputFromStack implements Command {
 
 
     @Override
-    public Map<String,String> execute() throws Exception {
+    public Map<String,OutputEntry> execute() throws Exception {
         DescribeStacksRequest describeStacksRequest = DescribeStacksRequest.builder().stackName(stackName).build();
         DescribeStacksResponse describeStacksResponse = cloudFormationClient.describeStacks(describeStacksRequest);          
         logger.trace(describeStacksResponse.toString());
         // TODO it's only one stack
-        Map<String,String> result = new HashMap<String,String>();
-        describeStacksResponse.stacks().get(0).outputs().forEach(it->result.put(it.outputKey(),it.outputValue()));
+        Map<String,OutputEntry> result = new HashMap<>();
+        describeStacksResponse.stacks().get(0).outputs().forEach(it->result.put(it.outputKey(),new OutputEntry(it.outputKey(),it.outputValue(),it.exportName())));
         return result;
     }
     

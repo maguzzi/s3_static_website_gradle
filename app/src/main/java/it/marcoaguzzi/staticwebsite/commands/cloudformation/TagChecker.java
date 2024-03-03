@@ -15,15 +15,11 @@ public class TagChecker {
     private static final Logger logger = LoggerFactory.getLogger(TagChecker.class);
 
     public static boolean stackContainsTag(List<Tag> tags) {
-        logger.trace("Tags: {}",tags);
+        logger.debug("Check if tags are complete: {}",tags);
         List<String> tagKeys =  tags.stream().map(it -> it.key()).collect(Collectors.toList());
-        logger.debug("Tag keys: {}",tagKeys);
         List<String> tagKeysToCheck = Arrays.asList(
             App.S3_STATIC_WEBSITE_TAG,
             App.S3_STATIC_WEBSITE_ENVIRONMENT_TAG);
-        boolean containsAll = tagKeys.containsAll(tagKeysToCheck);
-        logger.debug("Tag keys to check: {} ==> {}",tagKeysToCheck,containsAll);
-        return containsAll;
-                
+        return tagKeys.containsAll(tagKeysToCheck);                
     }
 }

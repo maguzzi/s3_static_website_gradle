@@ -25,20 +25,20 @@ public class CreateStackCommand implements Command {
     protected StackInfo stackInfo;
     protected List<Parameter> parameters;
 
-    public CreateStackCommand(CloudFormationClient cloudFormationClient, StackInfo stackParams) {
+    public CreateStackCommand(CloudFormationClient cloudFormationClient, StackInfo stackInfo) {
         this.cloudFormationClient = cloudFormationClient;
         this.parameters = new ArrayList<Parameter>();
-        this.stackInfo = stackParams;
+        parameters.add(parameter(App.ENVIRONMENT_PARAMETER_KEY, stackInfo.getEnvironmentString()));
+        parameters.add(parameter(App.WEBSITE_NAME_PARAMETER_KEY, stackInfo.getWebsiteName()));
+        this.stackInfo = stackInfo;
     }
 
-    public void setInputs(Map<String, Object> inputs) {
-        Parameter environment = Parameter
+    private Parameter parameter(String key, String value) {
+        return Parameter
                 .builder()
-                .parameterKey(App.ENVIRONMENT_PARAMETER_KEY)
-                .parameterValue(stackInfo.getEnvironmentString())
+                .parameterKey(key)
+                .parameterValue(value)
                 .build();
-
-        parameters.add(environment);
     }
 
     @Override
@@ -49,6 +49,8 @@ public class CreateStackCommand implements Command {
         String templateBody = CommandUtil.readFileContent(stackInfo.getTemplatePath());
 
         String stackFullName = stackInfo.getStackName() + "-" + stackInfo.getEnvironmentString();
+
+        logger.debug("parameters: {}",parameters);
 
         CreateStackRequest request = CreateStackRequest.builder()
                 .stackName(stackFullName)
@@ -61,7 +63,6 @@ public class CreateStackCommand implements Command {
                                 .value(stackInfo.getEnvironmentString()).build())
                 .build();
 
-            
         cloudFormationClient.createStack(request);
 
         StackCompleteChecker stackCompleteChecker = new StackCompleteChecker(cloudFormationClient, stackFullName);

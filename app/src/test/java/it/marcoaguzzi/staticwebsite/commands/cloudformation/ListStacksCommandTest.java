@@ -40,7 +40,7 @@ public class ListStacksCommandTest {
 
         ListStacksResponse listStacksResponse = ListStacksResponse
                 .builder()
-                .stackSummaries(StackSummary.builder().stackName(STACK_NAME).build())
+                .stackSummaries(StackSummary.builder().stackName(STACK_NAME).stackStatus(StackStatus.CREATE_COMPLETE).build())
                 .build();
         when(cloudFormationClientMock.listStacks(any(ListStacksRequest.class))).thenReturn(listStacksResponse);
 

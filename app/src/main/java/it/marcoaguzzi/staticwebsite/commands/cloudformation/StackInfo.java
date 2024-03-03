@@ -1,5 +1,6 @@
 package it.marcoaguzzi.staticwebsite.commands.cloudformation;
 
+import it.marcoaguzzi.staticwebsite.App;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -15,6 +16,6 @@ public class StackInfo {
     @NonNull
     private String stackName;
     @Default
-    private String websiteName = "my beautiful website"; // TODO read it from conf file
+    private String websiteName = App.getWebsiteName();
 }
 

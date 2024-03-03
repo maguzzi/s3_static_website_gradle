@@ -29,12 +29,14 @@ public class CommandFactory {
     public static final String S3_STATIC_WEBSITE_ARTIFACT_BUCKET = "s3-static-website-lambda-artifact-bucket";
 
     public static Command createBootstrapStack(App app) {
-        StackInfo stackParams = StackInfo
+        StackInfo stackInfo = StackInfo
                 .builder()
                 .environmentString(app.getEnvironment())
                 .templatePath("./src/main/resources/bootstrap/bootstrap.json")
                 .stackName(BOOTSTRAP_STACK_NAME).build();
-        return new CreateStackCommand(app.getCloudFormationClient(), stackParams);
+        CreateStackCommand createBootstrapStackCommand = new CreateStackCommand(app.getCloudFormationClient(), stackInfo);
+        createBootstrapStackCommand.setInputs(null);
+        return createBootstrapStackCommand;
     }
 
     public static Command createDistributionStack(App app) {

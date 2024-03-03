@@ -4,47 +4,99 @@
     "Outputs": {
         "ArtifactS3Bucket": {
             "Description": "ID of the bucket for the lambda artifacts",
-            "Value": { "Ref": "LambdaArtifactBucket" },
+            "Value": {
+                "Ref": "LambdaArtifactBucket"
+            },
             "Export": {
-                "Name": { "Fn::Join" : ["-",[{ "Fn::Sub": "${AWS::StackName}-LambdaArtifactBucket-Export" },{"Ref":"Environment"}]]}
+                "Name": {
+                    "Fn::Join": [
+                        "-",
+                        [
+                            {
+                                "Fn::Sub": "${AWS::StackName}-LambdaArtifactBucket-Export"
+                            },
+                            {
+                                "Ref": "Environment"
+                            }
+                        ]
+                    ]
+                }
             }
         },
         "CompiledTemplateBucket": {
             "Description": "ID of the bucket for the compiled templates",
-            "Value": { "Ref": "CompiledTemplateBucket" },
+            "Value": {
+                "Ref": "CompiledTemplateBucket"
+            },
             "Export": {
-                "Name": { "Fn::Join" : ["-",[{ "Fn::Sub": "${AWS::StackName}-CompiledTemplateBucket-Export" },{"Ref":"Environment"}]]}
+                "Name": {
+                    "Fn::Join": [
+                        "-",
+                        [
+                            {
+                                "Fn::Sub": "${AWS::StackName}-CompiledTemplateBucket-Export"
+                            },
+                            {
+                                "Ref": "Environment"
+                            }
+                        ]
+                    ]
+                }
             }
         }
-
     },
     "Parameters": {
         "ArtifactS3BucketName": {
             "Description": "S3 bucket to store lambda artifacts",
             "Type": "String",
-            "Default":"s3-static-website-lambda-artifact-bucket"
+            "Default": "s3-static-website-lambda-artifact-bucket"
         },
         "CompiledTemplateBucketName": {
             "Description": "S3 bucket to store compiled templates",
             "Type": "String",
-            "Default":"s3-static-website-compiled-template-bucket"
+            "Default": "s3-static-website-compiled-template-bucket"
+        },
+        "WebsiteName": {
+            "Description": "Website name (appliaction - wise)",
+            "Type": "String"
         },
         "Environment": {
             "Description": "Environment",
             "Type": "String",
-            "AllowedValues": ["dev","prod"]
+            "AllowedValues": [
+                "dev",
+                "prod"
+            ]
         }
     },
     "Resources": {
         "LambdaArtifactBucket": {
             "Properties": {
                 "BucketName": {
-                    "Fn::Join":["-",[{"Ref": "ArtifactS3BucketName"},{"Ref":"Environment"}]]
+                    "Fn::Join": [
+                        "-",
+                        [
+                            {
+                                "Ref": "ArtifactS3BucketName"
+                            },
+                            {
+                                "Ref": "Environment"
+                            }
+                        ]
+                    ]
                 },
                 "Tags": [
                     {
-                        "Key":"Environment",
-                        "Value" : {"Ref":"Environment"}
+                        "Key": "s3_static_website_environment",
+                        "Value": {
+                            "Ref": "Environment"
+                        }
+                    },
+                    {
+                        "Key": "s3_static_website",
+                        "Value": {
+                            "Ref": "WebsiteName"
+                        }
                     }
                 ]
             },
@@ -53,12 +105,30 @@
         "CompiledTemplateBucket": {
             "Properties": {
                 "BucketName": {
-                    "Fn::Join":["-",[{"Ref": "CompiledTemplateBucketName"},{"Ref":"Environment"}]]
+                    "Fn::Join": [
+                        "-",
+                        [
+                            {
+                                "Ref": "CompiledTemplateBucketName"
+                            },
+                            {
+                                "Ref": "Environment"
+                            }
+                        ]
+                    ]
                 },
                 "Tags": [
                     {
-                        "Key":"Environment",
-                        "Value" : {"Ref":"Environment"}
+                        "Key": "s3_static_website_environment",
+                        "Value": {
+                            "Ref": "Environment"
+                        }
+                    },
+                    {
+                        "Key": "s3_static_website",
+                        "Value": {
+                            "Ref": "WebsiteName"
+                        }
                     }
                 ]
             },

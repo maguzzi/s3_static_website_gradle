@@ -39,7 +39,7 @@ public class CreateStackCommandTest {
 
         Map<String, OutputEntry> execute = createStack.execute();
 
-        verify(cloudFormationClient).createStack(argThat(checkAllTagsArgumentMatcher()));
+        verify(cloudFormationClient).createStack(argThat(checkAllTagsArgumentMatcher("stackName")));
 
     }
 
@@ -49,11 +49,11 @@ public class CreateStackCommandTest {
                 .stacks(Stack.builder().stackId("stackId").stackStatus(StackStatus.CREATE_COMPLETE).build()).build();
     }
 
-    private ArgumentMatcher<CreateStackRequest> checkAllTagsArgumentMatcher() {
+    private ArgumentMatcher<CreateStackRequest> checkAllTagsArgumentMatcher(String name) {
         return new ArgumentMatcher<CreateStackRequest>() {
             @Override
             public boolean matches(CreateStackRequest argument) {
-                return TagChecker.stackContainsTag(argument.tags());
+                return TagChecker.stackContainsTag(name,argument.tags());
             }
         };
     }

@@ -42,14 +42,15 @@ public class ListStacksCommand implements Command {
         Map<String, OutputEntry> outputMap = new HashMap<>();
 
         for (StackSummary stackSummary : listStacksResponse.stackSummaries()) {
-            logger.trace("Checking stack {}", stackSummary.stackName());
+            if (!Arrays.asList(StackStatus.CREATE_COMPLETE,StackStatus.UPDATE_COMPLETE).contains(stackSummary.stackStatus())) {
+                logger.debug("Stack {} in status {}. Skipping...", stackSummary.stackName(),stackSummary.stackStatus());
+                continue;
+            }
             DescribeStacksRequest describeStacksRequest = DescribeStacksRequest.builder()
                     .stackName(stackSummary.stackName()).build();
             DescribeStacksResponse describeStacksResponse = cloudFormationClient.describeStacks(describeStacksRequest);
             List<Stack> stacks = describeStacksResponse.stacks().stream()
-                    .filter(it -> Arrays.asList(StackStatus.CREATE_COMPLETE, StackStatus.UPDATE_COMPLETE)
-                            .contains(it.stackStatus()))
-                    .filter(it->TagChecker.stackContainsTag(it.tags()))
+                    .filter(it -> TagChecker.stackContainsTag(it.stackName(),it.tags()))
                     .collect(Collectors.toList());
             stacks.forEach(it -> {
                 outputMap.put(LISTED_STACKS, new OutputEntry(it.stackName(), it.stackStatusAsString()));

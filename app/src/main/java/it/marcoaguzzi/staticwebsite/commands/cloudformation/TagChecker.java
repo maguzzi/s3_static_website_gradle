@@ -14,8 +14,8 @@ public class TagChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(TagChecker.class);
 
-    public static boolean stackContainsTag(List<Tag> tags) {
-        logger.debug("Check if tags are complete: {}",tags);
+    public static boolean stackContainsTag(String name,List<Tag> tags) {
+        logger.debug("Check if tags are complete for {}: {}",name,tags);
         List<String> tagKeys =  tags.stream().map(it -> it.key()).collect(Collectors.toList());
         List<String> tagKeysToCheck = Arrays.asList(
             App.S3_STATIC_WEBSITE_TAG,

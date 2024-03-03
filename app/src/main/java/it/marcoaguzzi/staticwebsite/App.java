@@ -31,7 +31,10 @@ public class App {
     private static final Region region = Region.US_EAST_1;
 
     public static final String ENVIRONMENT_PARAMETER_KEY = "Environment";
+
     public static final String S3_STATIC_WEBSITE_ENVIRONMENT_TAG="s3_static_website_environment";
+    public static final String S3_STATIC_WEBSITE_TAG="s3_static_website";
+
     public static final String S3_STATIC_WEBSITE_BUCKET="s3-static-website";
 
     public static final String COMPILED_TEMPLATE_BUCKET_KEY = "CompiledTemplateBucket";

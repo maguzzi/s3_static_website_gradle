@@ -22,54 +22,61 @@ public class CreateStackCommand implements Command {
     private static final Logger logger = LoggerFactory.getLogger(CreateStackCommand.class);
 
     private final CloudFormationClient cloudFormationClient;
-    protected StackInfo stackParams;
+    protected StackInfo stackInfo;
     protected List<Parameter> parameters;
-    
-    public CreateStackCommand(CloudFormationClient cloudFormationClient,StackInfo stackParams) {
+
+    public CreateStackCommand(CloudFormationClient cloudFormationClient, StackInfo stackParams) {
         this.cloudFormationClient = cloudFormationClient;
         this.parameters = new ArrayList<Parameter>();
-        this.stackParams = stackParams;
+        this.stackInfo = stackParams;
     }
 
-    public void setInputs(Map<String,Object> inputs){
+    public void setInputs(Map<String, Object> inputs) {
         Parameter environment = Parameter
-            .builder()
-            .parameterKey(App.ENVIRONMENT_PARAMETER_KEY)
-            .parameterValue(stackParams.getEnvironmentString())
-            .build();
+                .builder()
+                .parameterKey(App.ENVIRONMENT_PARAMETER_KEY)
+                .parameterValue(stackInfo.getEnvironmentString())
+                .build();
 
         parameters.add(environment);
     }
 
     @Override
-    public Map<String,OutputEntry> execute() throws Exception {
-        App.screenMessage(String.format("%s - %s CREATION START",stackParams.getStackName(),stackParams.getEnvironmentString()));
+    public Map<String, OutputEntry> execute() throws Exception {
+        App.screenMessage(String.format("%s - %s CREATION START", stackInfo.getStackName(),
+                stackInfo.getEnvironmentString()));
 
-        String templateBody = CommandUtil.readFileContent(stackParams.getTemplatePath());
+        String templateBody = CommandUtil.readFileContent(stackInfo.getTemplatePath());
 
-        String stackFullName = stackParams.getStackName()+"-"+stackParams.getEnvironmentString();
+        String stackFullName = stackInfo.getStackName() + "-" + stackInfo.getEnvironmentString();
 
         CreateStackRequest request = CreateStackRequest.builder()
-            .stackName(stackFullName)
-            .templateBody(templateBody)
-            .parameters(parameters)
-            .tags(Tag.builder().key(App.S3_STATIC_WEBSITE_ENVIRONMENT_TAG).value(stackParams.getEnvironmentString()).build())
-            .build();
+                .stackName(stackFullName)
+                .templateBody(templateBody)
+                .parameters(parameters)
+                .tags(
+                        Tag.builder().key(App.S3_STATIC_WEBSITE_TAG)
+                                .value(stackInfo.getWebsiteName()).build(),
+                        Tag.builder().key(App.S3_STATIC_WEBSITE_ENVIRONMENT_TAG)
+                                .value(stackInfo.getEnvironmentString()).build())
+                .build();
 
+            
         cloudFormationClient.createStack(request);
 
         StackCompleteChecker stackCompleteChecker = new StackCompleteChecker(cloudFormationClient, stackFullName);
-        stackCompleteChecker.check(new Function<String,Void>() {
+        stackCompleteChecker.check(new Function<String, Void>() {
             @Override
             public Void apply(String stackId) {
-                logger.info("Stack creation for stack id {} terminated.",stackId);
+                logger.info("Stack creation for stack id {} terminated.", stackId);
                 return null;
             }
         });
 
-        App.screenMessage(String.format("%s - %s CREATION END",stackParams.getStackName(),stackParams.getEnvironmentString()));
+        App.screenMessage(
+                String.format("%s - %s CREATION END", stackInfo.getStackName(), stackInfo.getEnvironmentString()));
 
-        Map<String,OutputEntry> result = new HashMap<>();
+        Map<String, OutputEntry> result = new HashMap<>();
 
         return result;
     }

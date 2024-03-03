@@ -1,28 +1,20 @@
 package it.marcoaguzzi.staticwebsite.commands.cloudformation;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Builder.Default;
+
+@Getter
+@Builder
 public class StackInfo {
+    @NonNull
     private String environmentString;
+    @NonNull
     private String templatePath;
+    @NonNull
     private String stackName;
-
-    // TODO make builder
-    public StackInfo(String environmentString,String templatePath,String stackName) {
-        this.environmentString = environmentString;
-        this.templatePath = templatePath;
-        this.stackName = stackName;
-    }
-
-    public String getEnvironmentString() {
-        return this.environmentString;
-    }
-    
-    public String getTemplatePath() {
-        return this.templatePath;
-    }
-
-    public String getStackName() {
-        return this.stackName;
-    }
-
+    @Default
+    private String websiteName = "my beautiful website"; // TODO read it from conf file
 }
 

@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import it.marcoaguzzi.staticwebsite.commands.Command;
 import it.marcoaguzzi.staticwebsite.commands.CommandFactory;
 import it.marcoaguzzi.staticwebsite.commands.CommandUtil;
-import it.marcoaguzzi.staticwebsite.commands.cloudformation.GetOutputFromStack;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.OutputEntry;
 import it.marcoaguzzi.staticwebsite.commands.misc.ZipArtifactCommand;
 import it.marcoaguzzi.staticwebsite.commands.s3.S3Params;

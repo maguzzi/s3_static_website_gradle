@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -18,7 +17,6 @@ import software.amazon.awssdk.services.cloudformation.model.DescribeStacksRespon
 import software.amazon.awssdk.services.cloudformation.model.ListStacksRequest;
 import software.amazon.awssdk.services.cloudformation.model.ListStacksResponse;
 import software.amazon.awssdk.services.cloudformation.model.StackSummary;
-import software.amazon.awssdk.services.cloudformation.model.Tag;
 import software.amazon.awssdk.services.cloudformation.model.Stack;
 import software.amazon.awssdk.services.cloudformation.model.StackStatus;
 
@@ -51,7 +49,7 @@ public class ListStacksCommand implements Command {
             List<Stack> stacks = describeStacksResponse.stacks().stream()
                     .filter(it -> Arrays.asList(StackStatus.CREATE_COMPLETE, StackStatus.UPDATE_COMPLETE)
                             .contains(it.stackStatus()))
-                    .filter(new AllTagsPresenceInStackPredicate())
+                    .filter(it->TagChecker.stackContainsTag(it.tags()))
                     .collect(Collectors.toList());
             stacks.forEach(it -> {
                 outputMap.put(LISTED_STACKS, new OutputEntry(it.stackName(), it.stackStatusAsString()));
@@ -61,18 +59,5 @@ public class ListStacksCommand implements Command {
         }
         App.screenMessage("LIST STACK END");
         return outputMap;
-    }
-
-    private class AllTagsPresenceInStackPredicate implements Predicate<Stack> {
-        @Override
-        public boolean test(Stack stack) {
-            return stack.tags().stream()
-                    .map(it -> it.key())
-                    .collect(Collectors.toList())
-                    .containsAll(Arrays.asList(
-                            App.S3_STATIC_WEBSITE_TAG,
-                            App.S3_STATIC_WEBSITE_ENVIRONMENT_TAG));
-        }
-
     }
 }

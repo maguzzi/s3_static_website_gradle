@@ -28,12 +28,17 @@ dependencies {
 
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.16.0")
 
-    // Use JUnit Jupiter for testing.
+	compileOnly("org.projectlombok:lombok:1.18.30")
+	annotationProcessor("org.projectlombok:lombok:1.18.30")
+	
+	// Use JUnit Jupiter for testing.
     testImplementation(libs.junit.jupiter)
     testImplementation("org.mockito:mockito-core:3.+")
     
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     
+    testCompileOnly("org.projectlombok:lombok:1.18.30")
+	testAnnotationProcessor("org.projectlombok:lombok:1.18.30")
 
     // This dependency is used by the application.
     implementation(libs.guava)

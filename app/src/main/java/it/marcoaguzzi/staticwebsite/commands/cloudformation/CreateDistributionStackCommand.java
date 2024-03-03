@@ -19,7 +19,7 @@ public class CreateDistributionStackCommand extends CreateStackCommand {
     }
 
     public void setInputs(Map<String,Object> inputs){
-        parameters.add(Parameter.builder().parameterKey(App.ENVIRONMENT_PARAMETER_KEY).parameterValue(stackParams.getEnvironmentString()).build());
+        parameters.add(Parameter.builder().parameterKey(App.ENVIRONMENT_PARAMETER_KEY).parameterValue(stackInfo.getEnvironmentString()).build());
         convertInputEntryToParameter(inputs,BOOTSTRAP_ARTIFACT_S3_BUCKET_NAME_EXPORT_NAME);
         convertInputEntryToParameter(inputs,ALTERNATIVE_DOMAIN_NAME_PARAMETER);
         convertInputEntryToParameter(inputs,S3_BUCKET_NAME_PARAMETER);

@@ -31,9 +31,11 @@ public class CommandFactory {
     public static Command createBootstrapStack(App app) {
         StackInfo stackInfo = StackInfo
                 .builder()
-                .environmentString(app.getEnvironment())
+                .environmentString(App.getEnvironment())
                 .templatePath("./src/main/resources/bootstrap/bootstrap.json")
-                .stackName(BOOTSTRAP_STACK_NAME).build();
+                .stackName(BOOTSTRAP_STACK_NAME)
+                .psedoRandomTimestampString(App.getPsedoRandomTimestampString())
+                .build();
         CreateStackCommand createBootstrapStackCommand = new CreateStackCommand(app.getCloudFormationClient(), stackInfo);
         createBootstrapStackCommand.setInputs(null);
         return createBootstrapStackCommand;
@@ -41,7 +43,7 @@ public class CommandFactory {
 
     public static Command createDistributionStack(App app) {
         StackInfo stackParams = StackInfo
-        .builder().environmentString(app.getEnvironment())
+        .builder().environmentString(App.getEnvironment())
                 .templatePath("./src/main/resources/distribution/website-distribution.json")
                 .stackName(DISTRIBUTION_STACK_NAME)
                 .build();
@@ -51,7 +53,7 @@ public class CommandFactory {
     // TODO fix path
     public static Command createUploadLambdaNestedStackTemplateFileToBucket(App app) {
         String path = "./src/main/resources/distribution/lambda-edge/lambda-edge.yaml";
-        S3Params s3Params = new S3Params(S3_STATIC_WEBSITE_COMPILED_TEMPLATE_BUCKET + "-" + app.getEnvironment(),
+        S3Params s3Params = new S3Params(S3_STATIC_WEBSITE_COMPILED_TEMPLATE_BUCKET + "-" + App.getEnvironment(),
                 new SimpleDateFormat("YYYYMMddHHmmss").format(new Date()) + "_nested_lambda_stack.template", path);
         UploadFileToBucketCommand uploadFileToBucketCommand = new UploadFileToBucketCommand(app.getS3Client());
         Map<String, Object> inputs = new HashMap<String, Object>();
@@ -62,7 +64,7 @@ public class CommandFactory {
 
     public static Command createZipArtifactCommand(App app) throws Exception {
         String sourcePath = "./src/main/resources/distribution/lambda-edge/index.mjs";
-        String zipFile = String.format("lambda-edge-%s-%s.zip", app.getEnvironment(),
+        String zipFile = String.format("lambda-edge-%s-%s.zip", App.getEnvironment(),
                 new SimpleDateFormat("yyyyMMdd").format(new Date()));
         return new ZipArtifactCommand(sourcePath, zipFile);
     }
@@ -72,7 +74,7 @@ public class CommandFactory {
     }
 
     public static Command createGetOutputFromBootstrapStack(App app) {
-        return new GetOutputFromStack(app.getCloudFormationClient(), BOOTSTRAP_STACK_NAME + "-" + app.getEnvironment());
+        return new GetOutputFromStack(app.getCloudFormationClient(), BOOTSTRAP_STACK_NAME + "-" + App.getEnvironment());
     }
 
     public static Command createList(App app) {

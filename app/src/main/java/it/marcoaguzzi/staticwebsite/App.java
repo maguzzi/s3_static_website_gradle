@@ -21,6 +21,11 @@ import static it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -33,6 +38,7 @@ public class App {
 
     public static final String ENVIRONMENT_PARAMETER_KEY = "Environment";
     public static final String WEBSITE_NAME_PARAMETER_KEY = "WebsiteName";
+    public static final String PSEUDO_RANDOM_TIMESTAMP_STRING_KEY = "PseudoRandomTimestampString";
 
     public static final String S3_STATIC_WEBSITE_ENVIRONMENT_TAG = "s3_static_website_environment";
     public static final String S3_STATIC_WEBSITE_TAG = "s3_static_website";
@@ -46,13 +52,20 @@ public class App {
     private CloudFormationClient cloudFormationClient;
     private S3Client s3Client;
 
-    private String environment;
+    private static String environment;
+    private static String websiteName;
+    private static String pseudoRandomTimestampString;
 
     public App(String[] args, CloudFormationClient cloudFormationClient, S3Client s3Client) throws Exception {
-        if (args == null || args.length != 2) {
-            logger.error("Command is required");
-            throw new Exception("Command is required");
+        if (args == null || args.length != 2) {    
+            String message = String.format("%s - Command is required",args!=null?Arrays.asList(args):"");
+            logger.error(message);
+            throw new Exception(message);
         }
+
+        readPropertiesFile();
+
+        pseudoRandomTimestampString = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS").format(LocalDateTime.now());
 
         this.cloudFormationClient = cloudFormationClient;
         this.s3Client = s3Client;
@@ -93,7 +106,7 @@ public class App {
                 File outputPath = new File(
                         outputFromZipArtifactCommand.get(ZipArtifactCommand.ARTIFACT_COMPRESSED_PATH).getValue());
                 S3Params s3Params = new S3Params(
-                        CommandFactory.S3_STATIC_WEBSITE_ARTIFACT_BUCKET + "-" + this.getEnvironment(),
+                        CommandFactory.S3_STATIC_WEBSITE_ARTIFACT_BUCKET + "-" + App.getEnvironment(),
                         outputPath.getName(),
                         outputPath.getAbsolutePath());
                 inputs.put(S3_PARAMS, s3Params);
@@ -143,8 +156,8 @@ public class App {
         }
     }
 
-    public String getEnvironment() {
-        return this.environment;
+    public static String getEnvironment() {
+        return environment;
     }
 
     public CloudFormationClient getCloudFormationClient() {
@@ -163,11 +176,20 @@ public class App {
 
     // TODO cache
     public static String getWebsiteName() {
+        return websiteName;
+    }
+
+    public static String getPsedoRandomTimestampString() {
+        return pseudoRandomTimestampString;
+    }
+
+    private static void readPropertiesFile() {
         File f = new File("./website.properties");
         try {
             Properties properties = new Properties();
             properties.load(new FileInputStream(f));
-            return properties.getProperty("name");
+            websiteName = properties.getProperty("name");
+            
         } catch (Exception e) {
             logger.error("Can't read property file {}", f.getAbsolutePath(), e);
             throw new RuntimeException(e);

@@ -9,13 +9,15 @@ import lombok.Builder.Default;
 @Getter
 @Builder
 public class StackInfo {
-    @NonNull
-    private String environmentString;
+    @Default
+    private String environmentString = App.getEnvironment();
     @NonNull
     private String templatePath;
     @NonNull
     private String stackName;
     @Default
     private String websiteName = App.getWebsiteName();
+    @Default
+    private String psedoRandomTimestampString = App.getPsedoRandomTimestampString();
 }
 

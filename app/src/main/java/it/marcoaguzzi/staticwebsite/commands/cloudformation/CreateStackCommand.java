@@ -30,6 +30,7 @@ public class CreateStackCommand implements Command {
         this.parameters = new ArrayList<Parameter>();
         parameters.add(parameter(App.ENVIRONMENT_PARAMETER_KEY, stackInfo.getEnvironmentString()));
         parameters.add(parameter(App.WEBSITE_NAME_PARAMETER_KEY, stackInfo.getWebsiteName()));
+        parameters.add(parameter(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY, stackInfo.getPsedoRandomTimestampString()));
         this.stackInfo = stackInfo;
     }
 

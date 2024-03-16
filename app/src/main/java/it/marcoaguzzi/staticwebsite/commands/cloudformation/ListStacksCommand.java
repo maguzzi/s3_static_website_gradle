@@ -43,7 +43,7 @@ public class ListStacksCommand implements Command {
 
         for (StackSummary stackSummary : listStacksResponse.stackSummaries()) {
             if (!Arrays.asList(StackStatus.CREATE_COMPLETE,StackStatus.UPDATE_COMPLETE).contains(stackSummary.stackStatus())) {
-                logger.debug("Stack {} in status {}. Skipping...", stackSummary.stackName(),stackSummary.stackStatus());
+                logger.trace("Stack {} in status {}. Skipping...", stackSummary.stackName(),stackSummary.stackStatus());
                 continue;
             }
             DescribeStacksRequest describeStacksRequest = DescribeStacksRequest.builder()

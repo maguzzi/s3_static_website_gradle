@@ -12,7 +12,7 @@ public class AppTest {
             new App(null, null, null);
             fail("Should ask for command");
         } catch (Exception e) {
-            assertEquals("Command is required", e.getMessage());
+            assertEquals(" - Command is required", e.getMessage());
         }
     }
 
@@ -22,7 +22,7 @@ public class AppTest {
             new App(new String[] { "COMMAND" }, null, null);
             fail("Should ask for command");
         } catch (Exception e) {
-            assertEquals("Command is required", e.getMessage());
+            assertEquals("[COMMAND] - Command is required", e.getMessage());
         }
     }
 

@@ -7,8 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
@@ -37,7 +35,7 @@ public class CreateStackCommandTest {
 
         CreateStackCommand createStack = new CreateStackCommand(cloudFormationClient, stackInfo);
 
-        Map<String, OutputEntry> execute = createStack.execute();
+        createStack.execute();
 
         verify(cloudFormationClient).createStack(argThat(checkAllTagsArgumentMatcher("stackName")));
 

@@ -49,12 +49,12 @@
         "ArtifactS3BucketName": {
             "Description": "S3 bucket to store lambda artifacts",
             "Type": "String",
-            "Default": "s3-static-website-lambda-artifact-bucket"
+            "Default": "s3-static-website-lambda-artifact"
         },
         "CompiledTemplateBucketName": {
             "Description": "S3 bucket to store compiled templates",
             "Type": "String",
-            "Default": "s3-static-website-compiled-template-bucket"
+            "Default": "s3-static-website-compiled-template"
         },
         "WebsiteName": {
             "Description": "Website name (appliaction - wise)",
@@ -67,6 +67,10 @@
                 "dev",
                 "prod"
             ]
+        },
+        "PseudoRandomTimestampString": {
+            "Description": "Random string for s3 names uniqueness",
+            "Type": "String"
         }
     },
     "Resources": {
@@ -81,6 +85,9 @@
                             },
                             {
                                 "Ref": "Environment"
+                            },
+                            {
+                                "Ref": "PseudoRandomTimestampString"
                             }
                         ]
                     ]
@@ -113,6 +120,9 @@
                             },
                             {
                                 "Ref": "Environment"
+                            },
+                            {
+                                "Ref": "PseudoRandomTimestampString"
                             }
                         ]
                     ]

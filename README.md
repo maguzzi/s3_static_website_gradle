@@ -8,3 +8,11 @@ output:
     "ResourceTagMappingList": []
 }
 ```
+change log level
+```
+export LOG_LEVEL=INFO
+```
+see resources for the s3 static website
+```
+$ ./gradlew run --args="LIST dev" #change the name for the param, dev doesn't mean anything
+```

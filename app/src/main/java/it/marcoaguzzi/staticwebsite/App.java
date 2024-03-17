@@ -21,14 +21,19 @@ import static it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.time.Instant;
-import java.time.LocalDate;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
@@ -57,15 +62,14 @@ public class App {
     private static String pseudoRandomTimestampString;
 
     public App(String[] args, CloudFormationClient cloudFormationClient, S3Client s3Client) throws Exception {
-        if (args == null || args.length != 2) {    
-            String message = String.format("%s - Command is required",args!=null?Arrays.asList(args):"");
+        if (args == null || args.length != 2) {
+            String message = String.format("%s - Command is required", args != null ? Arrays.asList(args) : "");
             logger.error(message);
             throw new Exception(message);
         }
 
-        readPropertiesFile();
-
-        pseudoRandomTimestampString = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS").format(LocalDateTime.now());
+        readWebsitePropertiesFile();
+        setupPseudoRandomTimestampString();
 
         this.cloudFormationClient = cloudFormationClient;
         this.s3Client = s3Client;
@@ -142,6 +146,35 @@ public class App {
         }
     }
 
+    private static Properties readPropertiesFile(Path path) throws Exception {
+        Properties properties = new Properties();
+        InputStream newInputStream = Files.newInputStream(path);
+        properties.load(new InputStreamReader(newInputStream));
+        newInputStream.close();
+        return properties;
+    }
+
+    private void setupPseudoRandomTimestampString() throws Exception {
+        Path websitesetupPath = Paths.get("./.websitesetup");
+        if (!Files.exists(websitesetupPath)) {
+            logger.warn("websitesetup file does not exists. Creating");
+            Files.createFile(websitesetupPath);
+        }
+        Properties propertiesFile = readPropertiesFile(websitesetupPath);
+        String property = propertiesFile.getProperty(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY, "");
+        if ("".equals(property)) {
+            pseudoRandomTimestampString = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS").format(LocalDateTime.now());
+            propertiesFile.setProperty(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY, pseudoRandomTimestampString);
+            OutputStream newOutputStream = Files.newOutputStream(websitesetupPath);
+            propertiesFile.store(newOutputStream,"Automatically generated. Do not edit!");
+            newOutputStream.close();
+            logger.info("Setup new pseudoRandomTimestampString to "+pseudoRandomTimestampString);
+        } else {
+            pseudoRandomTimestampString = property;
+            logger.info("PseudoRandomTimestampString already set to "+pseudoRandomTimestampString);
+        }
+    }
+
     private void mapToString(Map<String, OutputEntry> result) {
         result.entrySet().forEach(
                 e -> logger.info("{} -> {} ({})", e.getKey(), e.getValue().getValue(), e.getValue().getExportName()));
@@ -183,16 +216,8 @@ public class App {
         return pseudoRandomTimestampString;
     }
 
-    private static void readPropertiesFile() {
-        File f = new File("./website.properties");
-        try {
-            Properties properties = new Properties();
-            properties.load(new FileInputStream(f));
-            websiteName = properties.getProperty("name");
-            
-        } catch (Exception e) {
-            logger.error("Can't read property file {}", f.getAbsolutePath(), e);
-            throw new RuntimeException(e);
-        }
+    private static void readWebsitePropertiesFile() throws Exception {
+        Properties propertiesFile = readPropertiesFile(Paths.get("./website.properties"));
+        websiteName = propertiesFile.getProperty("name");
     }
 }

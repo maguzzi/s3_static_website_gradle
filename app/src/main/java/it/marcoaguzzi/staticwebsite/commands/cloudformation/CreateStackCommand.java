@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import it.marcoaguzzi.staticwebsite.App;
 import it.marcoaguzzi.staticwebsite.commands.Command;
-import it.marcoaguzzi.staticwebsite.commands.CommandUtil;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.CreateStackRequest;
 import software.amazon.awssdk.services.cloudformation.model.Parameter;
@@ -47,7 +46,7 @@ public class CreateStackCommand implements Command {
         App.screenMessage(String.format("%s - %s CREATION START", stackInfo.getStackName(),
                 stackInfo.getEnvironmentString()));
 
-        String templateBody = CommandUtil.readFileContent(stackInfo.getTemplatePath());
+        String templateBody = Utils.readFileContent(stackInfo.getTemplatePath());
 
         String stackFullName = stackInfo.getStackName() + "-" + stackInfo.getEnvironmentString();
 

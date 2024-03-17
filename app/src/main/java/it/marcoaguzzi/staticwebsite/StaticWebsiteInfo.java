@@ -14,7 +14,7 @@ public class StaticWebsiteInfo {
     private String websiteDomain;
     private String websiteAlternativeDomain;
 
-    public static StaticWebsiteInfo fromPropertyFile() throws Exception {
+    public static StaticWebsiteInfo fromWebsiteProperty() throws Exception {
         Properties propertiesFile = Utils.readPropertiesFile(Paths.get("./website.properties"));
         return StaticWebsiteInfo
         .builder()

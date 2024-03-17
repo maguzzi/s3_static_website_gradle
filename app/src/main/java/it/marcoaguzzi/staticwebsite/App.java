@@ -3,7 +3,6 @@ package it.marcoaguzzi.staticwebsite;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.s3.S3Client;
-
 import org.slf4j.LoggerFactory;
 
 import it.marcoaguzzi.staticwebsite.commands.Command;
@@ -18,8 +17,6 @@ import static it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand
 import static it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand.S3_PARAMS;
 
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -71,7 +68,7 @@ public class App {
             throw new Exception(message);
         }
 
-        readWebsitePropertiesFile();
+        staticWebsiteInfo = StaticWebsiteInfo.fromWebsiteProperty();
         setupPseudoRandomTimestampString();
 
         this.cloudFormationClient = cloudFormationClient;
@@ -139,7 +136,7 @@ public class App {
                         String.format("%s-%s-%s", S3_STATIC_WEBSITE_BUCKET, Utils.dateToSecond(), environment));
                 distributionInput.put(BOOTSTRAP_ARTIFACT_S3_BUCKET_NAME_EXPORT_NAME,
                         outputFromStackResult.get(COMPILED_TEMPLATE_BUCKET_KEY).getExportName());
-                distributionInput.put(ZIP_DATE, dateToDay());
+                distributionInput.put(ZIP_DATE, Utils.dateToDay());
                 distributionStackCommand.setInputs(distributionInput);
                 distributionStackCommand.execute();
                 break;

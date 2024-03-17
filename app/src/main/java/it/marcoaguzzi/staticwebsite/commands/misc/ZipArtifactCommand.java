@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import it.marcoaguzzi.staticwebsite.App;
 import it.marcoaguzzi.staticwebsite.commands.Command;
-import it.marcoaguzzi.staticwebsite.commands.CommandUtil;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.OutputEntry;
 
 public class ZipArtifactCommand implements Command {
@@ -29,7 +28,7 @@ public class ZipArtifactCommand implements Command {
     public Map<String, OutputEntry> execute() throws Exception {
         App.screenMessage("ZIP ARTIFACT START");
         logger.debug("{} --> {}", sourcePath, zipFile);
-        String compressedPath = CommandUtil.zipFile(sourcePath, zipFile);
+        String compressedPath = Utils.zipFile(sourcePath, zipFile);
         Map<String, OutputEntry> outputMap = new HashMap<>();
         outputMap.put(ARTIFACT_COMPRESSED_PATH,new OutputEntry(ARTIFACT_COMPRESSED_PATH, compressedPath));
         App.screenMessage("ZIP ARTIFACT END");

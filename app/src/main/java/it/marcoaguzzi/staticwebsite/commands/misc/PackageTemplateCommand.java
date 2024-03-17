@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import it.marcoaguzzi.staticwebsite.App;
 import it.marcoaguzzi.staticwebsite.commands.Command;
-import it.marcoaguzzi.staticwebsite.commands.CommandUtil;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.OutputEntry;
 
 public class PackageTemplateCommand implements Command {
@@ -43,7 +42,7 @@ public class PackageTemplateCommand implements Command {
     public Map<String,OutputEntry> execute() throws Exception {
         App.screenMessage("PACKAGE TEMPLATE START");
         ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode root = objectMapper.readTree(CommandUtil.readFileContent(templateSrcPath)); 
+        JsonNode root = objectMapper.readTree(Utils.readFileContent(templateSrcPath)); 
         logger.trace("local template: {}",root.toString());
         logger.trace("Resources: {}",root.get("Resources").toString());
         Iterator<JsonNode> elements = root.get("Resources").elements();

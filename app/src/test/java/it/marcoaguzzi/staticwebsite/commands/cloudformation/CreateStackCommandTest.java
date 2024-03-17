@@ -26,6 +26,7 @@ public class CreateStackCommandTest {
                 .environmentString("env")
                 .templatePath(templateFile.getAbsolutePath())
                 .stackName("stackName")
+                .websiteName("website")
                 .build();
 
         CloudFormationClient cloudFormationClient = mock(CloudFormationClient.class);

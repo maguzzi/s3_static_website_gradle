@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.marcoaguzzi.staticwebsite.App;
+import it.marcoaguzzi.staticwebsite.Utils;
 import it.marcoaguzzi.staticwebsite.commands.Command;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.OutputEntry;
 

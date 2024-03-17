@@ -8,19 +8,16 @@ import org.slf4j.LoggerFactory;
 
 import it.marcoaguzzi.staticwebsite.commands.Command;
 import it.marcoaguzzi.staticwebsite.commands.CommandFactory;
-import it.marcoaguzzi.staticwebsite.commands.CommandUtil;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.OutputEntry;
 import it.marcoaguzzi.staticwebsite.commands.misc.ZipArtifactCommand;
 import it.marcoaguzzi.staticwebsite.commands.s3.S3Params;
 
-import static it.marcoaguzzi.staticwebsite.commands.CommandUtil.*;
 import static it.marcoaguzzi.staticwebsite.commands.cloudformation.CreateDistributionStackCommand.*;
 import static it.marcoaguzzi.staticwebsite.commands.misc.PackageTemplateCommand.S3_PATH_TO_REPLACE;
 import static it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand.REMOTE_FILE_URL;
 import static it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand.S3_PARAMS;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -33,8 +30,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Stream;
-
 import org.slf4j.Logger;
 
 public class App {
@@ -58,9 +53,16 @@ public class App {
     private CloudFormationClient cloudFormationClient;
     private S3Client s3Client;
 
-    private static String environment;
-    private static String websiteName;
     private static String pseudoRandomTimestampString;
+    private static StaticWebsiteInfo staticWebsiteInfo;
+    
+    public static String getEnvironment() {
+        return staticWebsiteInfo.getEnvironment();
+    }
+
+    public static String getWebsiteName() {
+        return staticWebsiteInfo.getWebsiteName();
+    }
 
     public App(String[] args, CloudFormationClient cloudFormationClient, S3Client s3Client) throws Exception {
         if (args == null || args.length != 2) {
@@ -76,7 +78,7 @@ public class App {
         this.s3Client = s3Client;
 
         String command = args[0];
-        environment = args[1];
+        String environment = args[1];
 
         logger.info("Command: {} environment: {}", command, environment);
 
@@ -131,10 +133,10 @@ public class App {
                 mapToString(result4);
 
                 Map<String, Object> distributionInput = new HashMap<String, Object>();
-                distributionInput.put(DOMAIN_NAME_PARAMETER, "dev.marcoaguzzi.cloudns.ph");
-                distributionInput.put(ALTERNATIVE_DOMAIN_NAME_PARAMETER, "");
+                distributionInput.put(DOMAIN_NAME_PARAMETER, staticWebsiteInfo.getWebsiteDomain());
+                distributionInput.put(ALTERNATIVE_DOMAIN_NAME_PARAMETER, staticWebsiteInfo.getWebsiteAlternativeDomain());
                 distributionInput.put(S3_BUCKET_NAME_PARAMETER,
-                        String.format("%s-%s-%s", S3_STATIC_WEBSITE_BUCKET, CommandUtil.dateToSecond(), environment));
+                        String.format("%s-%s-%s", S3_STATIC_WEBSITE_BUCKET, Utils.dateToSecond(), environment));
                 distributionInput.put(BOOTSTRAP_ARTIFACT_S3_BUCKET_NAME_EXPORT_NAME,
                         outputFromStackResult.get(COMPILED_TEMPLATE_BUCKET_KEY).getExportName());
                 distributionInput.put(ZIP_DATE, dateToDay());
@@ -147,13 +149,7 @@ public class App {
         }
     }
 
-    private static Properties readPropertiesFile(Path path) throws Exception {
-        Properties properties = new Properties();
-        InputStream newInputStream = Files.newInputStream(path);
-        properties.load(new InputStreamReader(newInputStream));
-        newInputStream.close();
-        return properties;
-    }
+  
 
     private void setupPseudoRandomTimestampString() throws Exception {
         Path websitesetupPath = Paths.get("./.websitesetup");
@@ -161,7 +157,7 @@ public class App {
             logger.warn("websitesetup file does not exists. Creating");
             Files.createFile(websitesetupPath);
         }
-        Properties propertiesFile = readPropertiesFile(websitesetupPath);
+        Properties propertiesFile = Utils.readPropertiesFile(websitesetupPath);
         String property = propertiesFile.getProperty(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY, "");
         if ("".equals(property)) {
             pseudoRandomTimestampString = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS").format(LocalDateTime.now());
@@ -190,10 +186,6 @@ public class App {
         }
     }
 
-    public static String getEnvironment() {
-        return environment;
-    }
-
     public CloudFormationClient getCloudFormationClient() {
         return this.cloudFormationClient;
     }
@@ -208,17 +200,9 @@ public class App {
         logger.info("");
     }
 
-    // TODO cache
-    public static String getWebsiteName() {
-        return websiteName;
-    }
-
     public static String getPsedoRandomTimestampString() {
         return pseudoRandomTimestampString;
     }
 
-    private static void readWebsitePropertiesFile() throws Exception {
-        Properties propertiesFile = readPropertiesFile(Paths.get("./website.properties"));
-        websiteName = propertiesFile.getProperty("name");
-    }
+    
 }

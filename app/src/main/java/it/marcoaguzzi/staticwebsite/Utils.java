@@ -1,23 +1,25 @@
-package it.marcoaguzzi.staticwebsite.commands;
+package it.marcoaguzzi.staticwebsite;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CommandUtil {
-
-    private static final Logger logger = LoggerFactory.getLogger(CommandUtil.class);
+public class Utils {
+     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
     // TODO path inside the jar
     public static String readFileContent(String pathString) throws IOException {
@@ -72,4 +74,11 @@ public class CommandUtil {
         return new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
     }
 
+    public static Properties readPropertiesFile(Path path) throws Exception {
+        Properties properties = new Properties();
+        InputStream newInputStream = Files.newInputStream(path);
+        properties.load(new InputStreamReader(newInputStream));
+        newInputStream.close();
+        return properties;
+    }
 }

@@ -61,7 +61,9 @@ public class CreateStackCommand implements Command {
                         Tag.builder().key(App.S3_STATIC_WEBSITE_TAG)
                                 .value(stackInfo.getWebsiteName()).build(),
                         Tag.builder().key(App.S3_STATIC_WEBSITE_ENVIRONMENT_TAG)
-                                .value(stackInfo.getEnvironmentString()).build())
+                                .value(stackInfo.getEnvironmentString()).build(),
+                        Tag.builder().key(App.S3_STATIC_WEBSITE_TIMESTAMP_TAG)
+                                .value(stackInfo.getPsedoRandomTimestampString()).build())
                 .build();
 
         cloudFormationClient.createStack(request);

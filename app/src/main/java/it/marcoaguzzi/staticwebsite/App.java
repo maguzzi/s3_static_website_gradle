@@ -46,6 +46,7 @@ public class App {
     public static final String PSEUDO_RANDOM_TIMESTAMP_STRING_KEY = "PseudoRandomTimestampString";
 
     public static final String S3_STATIC_WEBSITE_ENVIRONMENT_TAG = "s3_static_website_environment";
+    public static final String S3_STATIC_WEBSITE_TIMESTAMP_TAG = "s3_static_website_timestamp_tag";
     public static final String S3_STATIC_WEBSITE_TAG = "s3_static_website";
 
     public static final String S3_STATIC_WEBSITE_BUCKET = "s3-static-website";

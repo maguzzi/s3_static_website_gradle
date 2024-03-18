@@ -51,3 +51,10 @@ $ ./gradlew run --args="LIST dev"
 18:19:35.466 [main] INFO  it.marcoaguzzi.staticwebsite.App -
 >
 > 
+> aws resourcegroupstaggingapi get-resources --tag-filters "Key=s3_static_website,Values=S3 static website project" --query ResourceTagMappingList[*].ResourceARN
+
+[
+    "arn:aws:cloudformation:us-east-1:239511348388:stack/s3-static-website-bootstrap-stack-dev/a07d5d20-e449-11ee-a123-0ee516927a51",
+    "arn:aws:s3:::s3-static-website-lambda-artifact-dev-20240317112619623",
+    "arn:aws:s3:::s3-static-website-compiled-template-dev-20240317112619623"
+]

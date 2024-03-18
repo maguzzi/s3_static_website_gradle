@@ -50,18 +50,6 @@ public class CommandFactory {
         return new CreateDistributionStackCommand(app.getCloudFormationClient(), stackParams);
     }
 
-    // TODO fix path
-    public static Command createUploadLambdaNestedStackTemplateFileToBucket(App app) {
-        String path = "./src/main/resources/distribution/lambda-edge/lambda-edge.yaml";
-        S3Params s3Params = new S3Params(S3_STATIC_WEBSITE_COMPILED_TEMPLATE_BUCKET + "-" + App.getEnvironment(),
-                new SimpleDateFormat("YYYYMMddHHmmss").format(new Date()) + "_nested_lambda_stack.template", path);
-        UploadFileToBucketCommand uploadFileToBucketCommand = new UploadFileToBucketCommand(app.getS3Client());
-        Map<String, Object> inputs = new HashMap<String, Object>();
-        inputs.put(S3_PARAMS, s3Params);
-        uploadFileToBucketCommand.setInputs(inputs);
-        return uploadFileToBucketCommand;
-    }
-
     public static Command createZipArtifactCommand(App app) throws Exception {
         String sourcePath = "./src/main/resources/distribution/lambda-edge/index.mjs";
         String zipFile = String.format("lambda-edge-%s-%s.zip", App.getEnvironment(),

@@ -21,7 +21,7 @@ public class StaticWebsiteInfo {
         .websiteName(propertiesFile.getProperty("name"))
         .environment(propertiesFile.getProperty("environment"))
         .websiteDomain(propertiesFile.getProperty("domain"))
-        .websiteDomain(propertiesFile.getProperty("alternativeDomain",""))
+        .websiteAlternativeDomain(propertiesFile.getProperty("alternativeDomain",""))
         .build();
     }
 }

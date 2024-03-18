@@ -10,6 +10,7 @@ import it.marcoaguzzi.staticwebsite.commands.CommandFactory;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.OutputEntry;
 import it.marcoaguzzi.staticwebsite.commands.misc.ZipArtifactCommand;
 import it.marcoaguzzi.staticwebsite.commands.s3.S3Params;
+import it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand;
 
 import static it.marcoaguzzi.staticwebsite.commands.cloudformation.CreateDistributionStackCommand.*;
 import static it.marcoaguzzi.staticwebsite.commands.misc.PackageTemplateCommand.S3_PATH_TO_REPLACE;
@@ -21,9 +22,11 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -52,7 +55,7 @@ public class App {
 
     private static String pseudoRandomTimestampString;
     private static StaticWebsiteInfo staticWebsiteInfo;
-    
+
     public static String getEnvironment() {
         return staticWebsiteInfo.getEnvironment();
     }
@@ -83,10 +86,6 @@ public class App {
         Command bootstrapStackCommand = CommandFactory.createBootstrapStack(this);
         Command distributionStackCommand = CommandFactory.createDistributionStack(this);
         Command getOutputFromStack = CommandFactory.createGetOutputFromBootstrapStack(this);
-        Command uploadLambdaNestedStackTemplateFileToBucket = CommandFactory
-                .createUploadLambdaNestedStackTemplateFileToBucket(this);
-        Command uploadLambdaNestedStackSourceCodeFileToBucket = CommandFactory
-                .createUploadLambdaNestedStackSourceCodeFileToBucket(this);
         Command compileTemplateCommand = CommandFactory.createPackageTemplateCommand(this);
         Command zipArtifactCommand = CommandFactory.createZipArtifactCommand(this);
 
@@ -100,42 +99,34 @@ public class App {
                 break;
             }
             case "DISTRIBUTION": {
-                Map<String, OutputEntry> outputFromStackResult = getOutputFromStack.execute();
-                mapToString(outputFromStackResult);
+                Map<String, OutputEntry> outputMap = new HashMap<>();
 
-                Map<String, OutputEntry> outputFromZipArtifactCommand = zipArtifactCommand.execute();
-                mapToString(outputFromZipArtifactCommand);
+                outputMap.putAll(getOutputFromStack.execute());
+                mapToString(outputMap);
 
-                HashMap<String, Object> inputs = new HashMap<String, Object>();
-                File outputPath = new File(
-                        outputFromZipArtifactCommand.get(ZipArtifactCommand.ARTIFACT_COMPRESSED_PATH).getValue());
-                S3Params s3Params = new S3Params(
-                        CommandFactory.S3_STATIC_WEBSITE_ARTIFACT_BUCKET + "-" + App.getEnvironment(),
-                        outputPath.getName(),
-                        outputPath.getAbsolutePath());
-                inputs.put(S3_PARAMS, s3Params);
-                uploadLambdaNestedStackSourceCodeFileToBucket.setInputs(inputs);
-                Map<String, OutputEntry> uploadLambdaArtifactResult = uploadLambdaNestedStackSourceCodeFileToBucket
-                        .execute();
-                mapToString(uploadLambdaArtifactResult);
+                outputMap.putAll(zipArtifactCommand.execute());
+                mapToString(outputMap);
 
-                Map<String, OutputEntry> uploadLambdaTemplateResult = uploadLambdaNestedStackTemplateFileToBucket
-                        .execute();
-                mapToString(uploadLambdaTemplateResult);
+                outputMap.putAll(uploadLambdaCode(outputMap));
+                mapToString(outputMap);
+
+                outputMap.putAll(uploadLambdaTemplate(outputMap));
+                mapToString(outputMap);
 
                 HashMap<String, Object> compileTemplateInputs = new HashMap<String, Object>();
-                compileTemplateInputs.put(S3_PATH_TO_REPLACE, uploadLambdaTemplateResult.get(REMOTE_FILE_URL));
+                compileTemplateInputs.put(S3_PATH_TO_REPLACE, outputMap.get(REMOTE_FILE_URL));
                 compileTemplateCommand.setInputs(compileTemplateInputs);
                 Map<String, OutputEntry> result4 = compileTemplateCommand.execute();
                 mapToString(result4);
 
                 Map<String, Object> distributionInput = new HashMap<String, Object>();
                 distributionInput.put(DOMAIN_NAME_PARAMETER, staticWebsiteInfo.getWebsiteDomain());
-                distributionInput.put(ALTERNATIVE_DOMAIN_NAME_PARAMETER, staticWebsiteInfo.getWebsiteAlternativeDomain());
+                distributionInput.put(ALTERNATIVE_DOMAIN_NAME_PARAMETER,
+                        staticWebsiteInfo.getWebsiteAlternativeDomain());
                 distributionInput.put(S3_BUCKET_NAME_PARAMETER,
                         String.format("%s-%s-%s", S3_STATIC_WEBSITE_BUCKET, Utils.dateToSecond(), environment));
                 distributionInput.put(BOOTSTRAP_ARTIFACT_S3_BUCKET_NAME_EXPORT_NAME,
-                        outputFromStackResult.get(COMPILED_TEMPLATE_BUCKET_KEY).getExportName());
+                        outputMap.get(COMPILED_TEMPLATE_BUCKET_KEY).getExportName());
                 distributionInput.put(ZIP_DATE, Utils.dateToDay());
                 distributionStackCommand.setInputs(distributionInput);
                 distributionStackCommand.execute();
@@ -146,7 +137,27 @@ public class App {
         }
     }
 
-  
+    private Map<String, OutputEntry> uploadLambdaCode(Map<String, OutputEntry> previousOutput) throws Exception {
+        Command uploadLambdaNestedStackSourceCodeFileToBucket = new UploadFileToBucketCommand(s3Client);
+        HashMap<String, Object> inputs = new HashMap<String, Object>();
+        File outputPath = new File(previousOutput.get(ZipArtifactCommand.ARTIFACT_COMPRESSED_PATH).getValue());
+        S3Params s3Params = new S3Params(previousOutput.get("ArtifactS3Bucket").getValue(), outputPath.getName(),
+                outputPath.getAbsolutePath());
+        inputs.put(S3_PARAMS, s3Params);
+        uploadLambdaNestedStackSourceCodeFileToBucket.setInputs(inputs);
+        return uploadLambdaNestedStackSourceCodeFileToBucket.execute();
+    }
+
+    private Map<String, OutputEntry> uploadLambdaTemplate(Map<String, OutputEntry> previousOutput) throws Exception {
+        String path = "./src/main/resources/distribution/lambda-edge/lambda-edge.yaml";
+        Command uploadLambdaNestedStackTemplateFileToBucket = new UploadFileToBucketCommand(s3Client);
+        HashMap<String, Object> inputs = new HashMap<String, Object>();
+        S3Params s3Params = new S3Params(previousOutput.get("CompiledTemplateBucket").getValue(),
+                new SimpleDateFormat("YYYYMMddHHmmss").format(new Date()) + "_nested_lambda_stack.template", path);
+        inputs.put(S3_PARAMS, s3Params);
+        uploadLambdaNestedStackTemplateFileToBucket.setInputs(inputs);
+        return uploadLambdaNestedStackTemplateFileToBucket.execute();
+    }
 
     private void setupPseudoRandomTimestampString() throws Exception {
         Path websitesetupPath = Paths.get("./.websitesetup");
@@ -160,12 +171,12 @@ public class App {
             pseudoRandomTimestampString = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS").format(LocalDateTime.now());
             propertiesFile.setProperty(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY, pseudoRandomTimestampString);
             OutputStream newOutputStream = Files.newOutputStream(websitesetupPath);
-            propertiesFile.store(newOutputStream,"Automatically generated. Do not edit!");
+            propertiesFile.store(newOutputStream, "Automatically generated. Do not edit!");
             newOutputStream.close();
-            logger.info("Setup new pseudoRandomTimestampString to "+pseudoRandomTimestampString);
+            logger.info("Setup new pseudoRandomTimestampString to " + pseudoRandomTimestampString);
         } else {
             pseudoRandomTimestampString = property;
-            logger.info("PseudoRandomTimestampString already set to "+pseudoRandomTimestampString);
+            logger.info("PseudoRandomTimestampString already set to " + pseudoRandomTimestampString);
         }
     }
 
@@ -201,5 +212,4 @@ public class App {
         return pseudoRandomTimestampString;
     }
 
-    
 }

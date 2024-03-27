@@ -66,6 +66,14 @@
         "S3BucketNameParameter": {
             "Description": "S3 Bucket Name (should be Domain Name-website)",
             "Type": "String"
+        },
+        "WebsiteName": {
+            "Description": "Project name",
+            "Type": "String"
+        },
+        "PseudoRandomTimestampString": {
+            "Description": "PseudoRandomTimestampString",
+            "Type": "String"
         }
     },
     "Resources": {

@@ -1,3 +1,12 @@
+check all stack resources
+Values=S3 static website project
+$ aws resourcegroupstaggingapi get-resources --tag-filters "Key=s3_static_website,Values=s3 name" --query='ResourceTagMappingList[*].ResourceARN'
+
+empty s3 bucket to delete the cloudformation stack
+aws s3 rm s3://bucket-name --recursive
+log:
+delete: s3://s3-static-website-lambda-artifact-dev-20240317112619623/filename
+
 list of resources with the s3 static website tag
 ```
 aws resourcegroupstaggingapi get-resources --tag-filters "Key=s3_static_website,Values=My beautiful website"

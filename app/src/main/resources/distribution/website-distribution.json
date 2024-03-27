@@ -247,8 +247,12 @@
                 },
                 "HostedZoneTags": [
                     {
-                        "Key" : "env",
+                        "Key" : "s3_static_website_environment",
                         "Value" : { "Ref":"Environment" }
+                    },
+                    {
+                        "Key": "s3_static_website",
+                        "Value": {"Ref": "WebsiteName"}
                     }
                 ]
             },
@@ -345,8 +349,35 @@
         "WebsiteBucket": {
             "Properties": {
                 "BucketName": {
-                    "Ref": "S3BucketNameParameter"
-                }
+                    "Fn::Join": [
+                        "-",
+                        [
+                            {
+                                "Ref": "S3BucketNameParameter"
+                            },
+                            {
+                                "Ref": "Environment"
+                            },
+                            {
+                                "Ref": "PseudoRandomTimestampString"
+                            }
+                        ]
+                    ]
+                },
+                "Tags": [
+                    {
+                        "Key": "s3_static_website_environment",
+                        "Value": {
+                            "Ref": "Environment"
+                        }
+                    },
+                    {
+                        "Key": "s3_static_website",
+                        "Value": {
+                            "Ref": "WebsiteName"
+                        }
+                    }
+                ]
             },
             "Type": "AWS::S3::Bucket"
         }

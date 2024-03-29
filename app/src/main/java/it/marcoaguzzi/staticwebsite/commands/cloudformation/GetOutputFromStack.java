@@ -24,15 +24,13 @@ public class GetOutputFromStack implements Command {
         this.stackName = stackName;
     }
 
-
     @Override
     public Map<String,OutputEntry> execute() throws Exception {
         DescribeStacksRequest describeStacksRequest = DescribeStacksRequest.builder().stackName(stackName).build();
         DescribeStacksResponse describeStacksResponse = cloudFormationClient.describeStacks(describeStacksRequest);          
         logger.trace(describeStacksResponse.toString());
-        // TODO it's only one stack
         Map<String,OutputEntry> result = new HashMap<>();
-        describeStacksResponse.stacks().get(0).outputs().forEach(it->result.put(it.outputKey(),new OutputEntry(it.outputKey(),it.outputValue(),it.exportName())));
+        describeStacksResponse.stacks().iterator().next().outputs().forEach(it->result.put(it.outputKey(),new OutputEntry(it.outputKey(),it.outputValue(),it.exportName())));
         return result;
     }
     

@@ -70,7 +70,7 @@ public class App {
     }
 
     public App(String[] args, CloudFormationClient cloudFormationClient, S3Client s3Client) throws Exception {
-        if (args == null || args.length != 2) {
+        if (args == null || args.length != 1) {
             String message = String.format("%s - Command is required", args != null ? Arrays.asList(args) : "");
             logger.error(message);
             throw new Exception(message);
@@ -83,30 +83,29 @@ public class App {
         this.s3Client = s3Client;
 
         String command = args[0];
-        String environment = args[1];
-
-        logger.info("Command: {} environment: {}", command, environment);
+        
+        logger.info("Command: {} environment: {}", command, staticWebsiteInfo.getEnvironment());
 
         Command listStacksCommand = CommandFactory.createList(this);
         Command bootstrapStackCommand = CommandFactory.createBootstrapStack(this);
-        
-        Command getOutputFromStack = CommandFactory.createGetOutputFromBootstrapStack(this);
+        Command getOutputFromBootstrapStack = CommandFactory.createGetOutputFromBootstrapStack(this);
         Command compileTemplateCommand = CommandFactory.createPackageTemplateCommand(this);
         Command zipArtifactCommand = CommandFactory.createZipArtifactCommand(this);
 
         switch (command) {
+
             case "LIST": {
                 listStacksCommand.execute();
                 break;
             }
-            case "BOOTSTRAP": {
-                bootstrapStackCommand.execute();
-                break;
-            }
+
             case "DISTRIBUTION": {
+
+                bootstrapStackCommand.execute();
+
                 Map<String, OutputEntry> outputMap = new HashMap<>();
 
-                outputMap.putAll(getOutputFromStack.execute());
+                outputMap.putAll(getOutputFromBootstrapStack.execute());
                 outputMapToString(outputMap);
 
                 outputMap.putAll(zipArtifactCommand.execute());
@@ -129,7 +128,7 @@ public class App {
                 distributionInput.put(ALTERNATIVE_DOMAIN_NAME_PARAMETER,
                         staticWebsiteInfo.getWebsiteAlternativeDomain());
                 distributionInput.put(S3_BUCKET_FULL_NAME_PARAMETER,
-                        String.format("%s-%s-%s", S3_STATIC_WEBSITE_BUCKET, environment ,pseudoRandomTimestampString));
+                        String.format("%s-%s-%s", S3_STATIC_WEBSITE_BUCKET, staticWebsiteInfo.getEnvironment() ,pseudoRandomTimestampString));
                 distributionInput.put(BOOTSTRAP_ARTIFACT_S3_BUCKET_NAME_EXPORT_NAME,
                         outputMap.get(ARTIFACT_S3_BUCKET).getExportName());
                 distributionInput.put(ZIP_DATE, zipDate);
@@ -150,7 +149,7 @@ public class App {
         Command uploadLambdaNestedStackSourceCodeFileToBucket = new UploadFileToBucketCommand(s3Client);
         HashMap<String, Object> inputs = new HashMap<String, Object>();
         File outputPath = new File(previousOutput.get(ZipArtifactCommand.ARTIFACT_COMPRESSED_PATH).getValue());
-        S3Params s3Params = new S3Params(previousOutput.get("ArtifactS3Bucket").getValue(), outputPath.getName(),
+        S3Params s3Params = new S3Params(previousOutput.get(ARTIFACT_S3_BUCKET).getValue(), outputPath.getName(),
                 outputPath.getAbsolutePath());
         inputs.put(S3_PARAMS, s3Params);
         uploadLambdaNestedStackSourceCodeFileToBucket.setInputs(inputs);

@@ -1,16 +1,15 @@
 package it.marcoaguzzi.staticwebsite;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -19,29 +18,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Utils {
-     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
-    // TODO path inside the jar
-    public static String readFileContent(String pathString) throws IOException {
-        Path path = Paths.get(pathString);
-        logger.info("reading content from: {}", path.toAbsolutePath());
-        return new String(Files.readAllBytes(path));
+    private static final Logger logger = LoggerFactory.getLogger(Utils.class);
+
+    public String readFileContent(String pathString) throws Exception {
+        logger.info(getClass().getClassLoader().getResource(".").toURI().toString());
+        URL url = getClass().getClassLoader().getResource(pathString);
+        logger.info("reading content from: {}", url);
+        return readByteFromURL(url);
     }
 
-    // TODO better with try-with-resources
     public static String zipFile(String sourceFile, String zipFileName) throws Exception {
-        FileInputStream fis = null;
-        FileOutputStream fos = null;
-        ZipOutputStream zipOut = null;
-        Path tmpDir = null;
-        try {
-            tmpDir = Files.createTempDirectory("cloudformation_tmp");
-            File zipFile = new File(tmpDir.toAbsolutePath()+File.separator+zipFileName);
-            fos = new FileOutputStream(zipFile);
-            zipOut = new ZipOutputStream(fos);
 
-            File fileToZip = new File(sourceFile);
-            fis = new FileInputStream(fileToZip);
+        Path tmpDir = Files.createTempDirectory("cloudformation_tmp");
+        File fileToZip = new File(sourceFile);
+        File zipFile = new File(tmpDir.toAbsolutePath() + File.separator + zipFileName);
+
+        try (
+                FileInputStream fis = new FileInputStream(fileToZip);
+                FileOutputStream fos = new FileOutputStream(zipFile);
+                ZipOutputStream zipOut = new ZipOutputStream(fos);) {
+
             ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
             zipOut.putNextEntry(zipEntry);
 
@@ -53,16 +50,22 @@ public class Utils {
             return zipFile.getAbsolutePath();
         } catch (IOException ioe) {
             throw new Exception(ioe);
-        } finally {
-            if (zipOut != null) {
-                zipOut.close();
+        }
+    }
+
+    private static String readByteFromURL(URL url) throws Exception {
+        try (InputStream is = url.openStream();
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ) {
+            
+            byte[] bytes = new byte[1024];
+            int length;
+            while ((length = is.read(bytes)) >= 0) {
+                bos.write(bytes, 0, length);
             }
-            if (fis != null) {
-                fis.close();
-            }
-            if (fos != null) {
-                fos.close();
-            }
+            return bos.toString();
+        } catch (IOException ioe) {
+            throw new Exception(ioe);
         }
     }
 

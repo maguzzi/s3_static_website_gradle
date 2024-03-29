@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 public class AppTest {
 
     @Test
-    public void testAppNoParams() {
+    public void testAppNoCommand() {
         try {
             new App(null, null, null);
             fail("Should ask for command");
@@ -17,13 +17,8 @@ public class AppTest {
     }
 
     @Test
-    public void testAppNoEnv() {
-        try {
-            new App(new String[] { "COMMAND" }, null, null);
-            fail("Should ask for command");
-        } catch (Exception e) {
-            assertEquals("[COMMAND] - Command is required", e.getMessage());
-        }
+    public void testAppWithCommand() throws Exception{
+        new App(new String[] { "COMMAND" }, null, null);
     }
 
 }

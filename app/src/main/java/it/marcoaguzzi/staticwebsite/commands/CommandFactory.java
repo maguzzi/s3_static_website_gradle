@@ -1,11 +1,8 @@
 package it.marcoaguzzi.staticwebsite.commands;
 
 import static it.marcoaguzzi.staticwebsite.commands.misc.PackageTemplateCommand.PACKAGED_TEMPLATE_PATH;
-import static it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand.S3_PARAMS;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import it.marcoaguzzi.staticwebsite.App;
@@ -17,7 +14,6 @@ import it.marcoaguzzi.staticwebsite.commands.cloudformation.OutputEntry;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.StackInfo;
 import it.marcoaguzzi.staticwebsite.commands.misc.PackageTemplateCommand;
 import it.marcoaguzzi.staticwebsite.commands.misc.ZipArtifactCommand;
-import it.marcoaguzzi.staticwebsite.commands.s3.S3Params;
 import it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand;
 import software.amazon.awssdk.services.cloudformation.model.Capability;
 
@@ -26,16 +22,11 @@ public class CommandFactory {
     private static final String BOOTSTRAP_STACK_NAME = "s3-static-website-bootstrap-stack";
     private static final String DISTRIBUTION_STACK_NAME = "s3-static-website-distribution-stack";
 
-    // TODO refactor fixed s3 bucket / keys
-    private static final String S3_STATIC_WEBSITE_COMPILED_TEMPLATE_BUCKET = "s3-static-website-compiled-template-bucket";
-    // TODO refactor fixed s3 bucket / keys
-    public static final String S3_STATIC_WEBSITE_ARTIFACT_BUCKET = "s3-static-website-lambda-artifact-bucket";
-
     public static Command createBootstrapStack(App app) {
         StackInfo stackInfo = StackInfo
                 .builder()
                 .environmentString(App.getEnvironment())
-                .templatePath("./src/main/resources/bootstrap/bootstrap.json")
+                .templatePath("/bootstrap/bootstrap.json")
                 .stackName(BOOTSTRAP_STACK_NAME)
                 .psedoRandomTimestampString(App.getPsedoRandomTimestampString())
                 .build();

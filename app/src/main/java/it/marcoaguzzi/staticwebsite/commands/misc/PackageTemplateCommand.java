@@ -43,7 +43,7 @@ public class PackageTemplateCommand implements Command {
     public Map<String,OutputEntry> execute() throws Exception {
         App.screenMessage("PACKAGE TEMPLATE START");
         ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode root = objectMapper.readTree(Utils.readFileContent(templateSrcPath)); 
+        JsonNode root = objectMapper.readTree(new Utils().readFileContent(templateSrcPath)); 
         logger.trace("local template: {}",root.toString());
         logger.trace("Resources: {}",root.get("Resources").toString());
         Iterator<JsonNode> elements = root.get("Resources").elements();

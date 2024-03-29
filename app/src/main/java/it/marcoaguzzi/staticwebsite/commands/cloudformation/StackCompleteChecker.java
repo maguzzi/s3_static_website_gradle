@@ -48,7 +48,7 @@ class StackCompleteAndId {
         return new StackCompleteAndId(
                 describeStacksResponse.stacks().stream()
                         .allMatch(it -> it.stackStatus().equals(StackStatus.CREATE_COMPLETE)),
-                describeStacksResponse.stacks().get(0).stackId());
+                describeStacksResponse.stacks().iterator().next().stackId());
     }
 
     private StackCompleteAndId(Boolean complete, String id) {

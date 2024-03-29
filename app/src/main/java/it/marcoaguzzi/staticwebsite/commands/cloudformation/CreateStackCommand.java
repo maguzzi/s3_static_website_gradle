@@ -13,6 +13,7 @@ import it.marcoaguzzi.staticwebsite.App;
 import it.marcoaguzzi.staticwebsite.Utils;
 import it.marcoaguzzi.staticwebsite.commands.Command;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
+import software.amazon.awssdk.services.cloudformation.model.Capability;
 import software.amazon.awssdk.services.cloudformation.model.CreateStackRequest;
 import software.amazon.awssdk.services.cloudformation.model.Parameter;
 import software.amazon.awssdk.services.cloudformation.model.Tag;
@@ -24,6 +25,7 @@ public class CreateStackCommand implements Command {
     private final CloudFormationClient cloudFormationClient;
     protected StackInfo stackInfo;
     protected List<Parameter> parameters;
+    protected List<Capability> capabilities=new ArrayList<>();
 
     public CreateStackCommand(CloudFormationClient cloudFormationClient, StackInfo stackInfo) {
         this.cloudFormationClient = cloudFormationClient;
@@ -32,6 +34,10 @@ public class CreateStackCommand implements Command {
         parameters.add(parameter(App.WEBSITE_NAME_PARAMETER_KEY, stackInfo.getWebsiteName()));
         parameters.add(parameter(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY, stackInfo.getPsedoRandomTimestampString()));
         this.stackInfo = stackInfo;
+    }
+
+    public void addCapability(Capability capability) {
+        capabilities.add(capability);
     }
 
     private Parameter parameter(String key, String value) {
@@ -57,6 +63,7 @@ public class CreateStackCommand implements Command {
                 .stackName(stackFullName)
                 .templateBody(templateBody)
                 .parameters(parameters)
+                .capabilities(capabilities)
                 .tags(
                         Tag.builder().key(App.S3_STATIC_WEBSITE_TAG)
                                 .value(stackInfo.getWebsiteName()).build(),

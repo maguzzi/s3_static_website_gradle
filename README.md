@@ -1,3 +1,5 @@
+$Env:LOG_LEVEL = "INFO"
+
 check all stack resources
 Values=S3 static website project
 $ aws resourcegroupstaggingapi get-resources --tag-filters "Key=s3_static_website,Values=s3 name" --query='ResourceTagMappingList[*].ResourceARN'

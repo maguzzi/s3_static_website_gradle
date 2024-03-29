@@ -13,6 +13,7 @@ import it.marcoaguzzi.staticwebsite.commands.s3.S3Params;
 import it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand;
 
 import static it.marcoaguzzi.staticwebsite.commands.cloudformation.CreateDistributionStackCommand.*;
+import static it.marcoaguzzi.staticwebsite.commands.misc.PackageTemplateCommand.PACKAGED_TEMPLATE_PATH;
 import static it.marcoaguzzi.staticwebsite.commands.misc.PackageTemplateCommand.S3_PATH_TO_REPLACE;
 import static it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand.REMOTE_FILE_URL;
 import static it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand.S3_PARAMS;
@@ -47,6 +48,7 @@ public class App {
     public static final String S3_STATIC_WEBSITE_BUCKET = "s3-static-website";
 
     public static final String COMPILED_TEMPLATE_BUCKET_KEY = "CompiledTemplateBucket";
+    public static final String ARTIFACT_S3_BUCKET = "ArtifactS3Bucket";
 
     private static final Logger logger = LoggerFactory.getLogger(App.class);
 
@@ -84,7 +86,7 @@ public class App {
 
         Command listStacksCommand = CommandFactory.createList(this);
         Command bootstrapStackCommand = CommandFactory.createBootstrapStack(this);
-        Command distributionStackCommand = CommandFactory.createDistributionStack(this);
+        
         Command getOutputFromStack = CommandFactory.createGetOutputFromBootstrapStack(this);
         Command compileTemplateCommand = CommandFactory.createPackageTemplateCommand(this);
         Command zipArtifactCommand = CommandFactory.createZipArtifactCommand(this);
@@ -116,9 +118,9 @@ public class App {
                 HashMap<String, Object> compileTemplateInputs = new HashMap<String, Object>();
                 compileTemplateInputs.put(S3_PATH_TO_REPLACE, outputMap.get(REMOTE_FILE_URL));
                 compileTemplateCommand.setInputs(compileTemplateInputs);
-                Map<String, OutputEntry> result4 = compileTemplateCommand.execute();
-                mapToString(result4);
-
+                outputMap.putAll(compileTemplateCommand.execute());
+                mapToString(outputMap);
+                
                 Map<String, Object> distributionInput = new HashMap<String, Object>();
                 distributionInput.put(DOMAIN_NAME_PARAMETER, staticWebsiteInfo.getWebsiteDomain());
                 distributionInput.put(ALTERNATIVE_DOMAIN_NAME_PARAMETER,
@@ -126,8 +128,11 @@ public class App {
                 distributionInput.put(S3_BUCKET_NAME_PARAMETER,
                         String.format("%s-%s-%s", S3_STATIC_WEBSITE_BUCKET, Utils.dateToSecond(), environment));
                 distributionInput.put(BOOTSTRAP_ARTIFACT_S3_BUCKET_NAME_EXPORT_NAME,
-                        outputMap.get(COMPILED_TEMPLATE_BUCKET_KEY).getExportName());
+                        outputMap.get(ARTIFACT_S3_BUCKET).getExportName());
                 distributionInput.put(ZIP_DATE, Utils.dateToDay());
+                distributionInput.put(PACKAGED_TEMPLATE_PATH,outputMap.get(PACKAGED_TEMPLATE_PATH));
+
+                Command distributionStackCommand = CommandFactory.createDistributionStack(this,outputMap);
                 distributionStackCommand.setInputs(distributionInput);
                 distributionStackCommand.execute();
                 break;

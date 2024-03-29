@@ -1,5 +1,6 @@
 package it.marcoaguzzi.staticwebsite.commands;
 
+import static it.marcoaguzzi.staticwebsite.commands.misc.PackageTemplateCommand.PACKAGED_TEMPLATE_PATH;
 import static it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand.S3_PARAMS;
 
 import java.text.SimpleDateFormat;
@@ -12,11 +13,13 @@ import it.marcoaguzzi.staticwebsite.commands.cloudformation.CreateDistributionSt
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.CreateStackCommand;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.GetOutputFromStack;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.ListStacksCommand;
+import it.marcoaguzzi.staticwebsite.commands.cloudformation.OutputEntry;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.StackInfo;
 import it.marcoaguzzi.staticwebsite.commands.misc.PackageTemplateCommand;
 import it.marcoaguzzi.staticwebsite.commands.misc.ZipArtifactCommand;
 import it.marcoaguzzi.staticwebsite.commands.s3.S3Params;
 import it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand;
+import software.amazon.awssdk.services.cloudformation.model.Capability;
 
 public class CommandFactory {
 
@@ -41,13 +44,15 @@ public class CommandFactory {
         return createBootstrapStackCommand;
     }
 
-    public static Command createDistributionStack(App app) {
+    public static Command createDistributionStack(App app,Map<String,OutputEntry> previousOutputs) {
         StackInfo stackParams = StackInfo
         .builder().environmentString(App.getEnvironment())
-                .templatePath("./src/main/resources/distribution/website-distribution.json")
+                .templatePath(previousOutputs.get(PACKAGED_TEMPLATE_PATH).getValue())
                 .stackName(DISTRIBUTION_STACK_NAME)
                 .build();
-        return new CreateDistributionStackCommand(app.getCloudFormationClient(), stackParams);
+        CreateStackCommand createDistributionStackCommand = new CreateDistributionStackCommand(app.getCloudFormationClient(), stackParams);
+        createDistributionStackCommand.addCapability(Capability.CAPABILITY_NAMED_IAM);
+        return createDistributionStackCommand;
     }
 
     public static Command createZipArtifactCommand(App app) throws Exception {

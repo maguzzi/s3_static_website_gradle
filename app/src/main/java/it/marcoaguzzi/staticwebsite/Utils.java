@@ -66,14 +66,6 @@ public class Utils {
         }
     }
 
-    public static String dateToDay() {
-        return new SimpleDateFormat("yyyyMMdd").format(new Date());
-    }
-
-    public static String dateToSecond() {
-        return new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-    }
-
     public static Properties readPropertiesFile(Path path) throws Exception {
         Properties properties = new Properties();
         InputStream newInputStream = Files.newInputStream(path);

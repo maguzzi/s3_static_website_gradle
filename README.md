@@ -1,3 +1,4 @@
+$Env:LOG_LEVEL="DEBUG"
 $Env:LOG_LEVEL = "INFO"
 
 check all stack resources

@@ -45,10 +45,11 @@ public class App {
     public static final String S3_STATIC_WEBSITE_TIMESTAMP_TAG = "s3_static_website_timestamp_tag";
     public static final String S3_STATIC_WEBSITE_TAG = "s3_static_website";
 
-    public static final String S3_STATIC_WEBSITE_BUCKET = "s3-static-website";
+    public static final String S3_STATIC_WEBSITE_BUCKET = "s3-static-website-content";
 
     public static final String COMPILED_TEMPLATE_BUCKET_KEY = "CompiledTemplateBucket";
     public static final String ARTIFACT_S3_BUCKET = "ArtifactS3Bucket";
+    public static final String ZIP_DATE = "ZipDate";
 
     private static final Logger logger = LoggerFactory.getLogger(App.class);
 
@@ -56,7 +57,9 @@ public class App {
     private S3Client s3Client;
 
     private static String pseudoRandomTimestampString;
+    private static String zipDate;
     private static StaticWebsiteInfo staticWebsiteInfo;
+
 
     public static String getEnvironment() {
         return staticWebsiteInfo.getEnvironment();
@@ -104,36 +107,37 @@ public class App {
                 Map<String, OutputEntry> outputMap = new HashMap<>();
 
                 outputMap.putAll(getOutputFromStack.execute());
-                mapToString(outputMap);
+                outputMapToString(outputMap);
 
                 outputMap.putAll(zipArtifactCommand.execute());
-                mapToString(outputMap);
+                outputMapToString(outputMap);
 
                 outputMap.putAll(uploadLambdaCode(outputMap));
-                mapToString(outputMap);
+                outputMapToString(outputMap);
 
                 outputMap.putAll(uploadLambdaTemplate(outputMap));
-                mapToString(outputMap);
+                outputMapToString(outputMap);
 
                 HashMap<String, Object> compileTemplateInputs = new HashMap<String, Object>();
                 compileTemplateInputs.put(S3_PATH_TO_REPLACE, outputMap.get(REMOTE_FILE_URL));
                 compileTemplateCommand.setInputs(compileTemplateInputs);
                 outputMap.putAll(compileTemplateCommand.execute());
-                mapToString(outputMap);
+                outputMapToString(outputMap);
                 
                 Map<String, Object> distributionInput = new HashMap<String, Object>();
                 distributionInput.put(DOMAIN_NAME_PARAMETER, staticWebsiteInfo.getWebsiteDomain());
                 distributionInput.put(ALTERNATIVE_DOMAIN_NAME_PARAMETER,
                         staticWebsiteInfo.getWebsiteAlternativeDomain());
-                distributionInput.put(S3_BUCKET_NAME_PARAMETER,
-                        String.format("%s-%s-%s", S3_STATIC_WEBSITE_BUCKET, Utils.dateToSecond(), environment));
+                distributionInput.put(S3_BUCKET_FULL_NAME_PARAMETER,
+                        String.format("%s-%s-%s", S3_STATIC_WEBSITE_BUCKET, environment ,pseudoRandomTimestampString));
                 distributionInput.put(BOOTSTRAP_ARTIFACT_S3_BUCKET_NAME_EXPORT_NAME,
                         outputMap.get(ARTIFACT_S3_BUCKET).getExportName());
-                distributionInput.put(ZIP_DATE, Utils.dateToDay());
+                distributionInput.put(ZIP_DATE, zipDate);
                 distributionInput.put(PACKAGED_TEMPLATE_PATH,outputMap.get(PACKAGED_TEMPLATE_PATH));
 
                 Command distributionStackCommand = CommandFactory.createDistributionStack(this,outputMap);
                 distributionStackCommand.setInputs(distributionInput);
+                inputMapToString(distributionInput);
                 distributionStackCommand.execute();
                 break;
 
@@ -171,23 +175,35 @@ public class App {
             Files.createFile(websitesetupPath);
         }
         Properties propertiesFile = Utils.readPropertiesFile(websitesetupPath);
-        String property = propertiesFile.getProperty(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY, "");
-        if ("".equals(property)) {
+        String oldPRTS = propertiesFile.getProperty(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY, "");
+        String oldZipDate = propertiesFile.getProperty(App.ZIP_DATE, "");
+        if ("".equals(oldPRTS)) {
             pseudoRandomTimestampString = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS").format(LocalDateTime.now());
+            zipDate = pseudoRandomTimestampString.substring(0,8);
             propertiesFile.setProperty(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY, pseudoRandomTimestampString);
+            propertiesFile.setProperty(App.ZIP_DATE, zipDate);
             OutputStream newOutputStream = Files.newOutputStream(websitesetupPath);
             propertiesFile.store(newOutputStream, "Automatically generated. Do not edit!");
             newOutputStream.close();
             logger.info("Setup new pseudoRandomTimestampString to " + pseudoRandomTimestampString);
+            logger.info("Setup new zipDate to " + zipDate);
         } else {
-            pseudoRandomTimestampString = property;
+            pseudoRandomTimestampString = oldPRTS;
+            zipDate = oldZipDate;
             logger.info("PseudoRandomTimestampString already set to " + pseudoRandomTimestampString);
+            logger.info("ZipDate already set to " + zipDate);
+
         }
     }
 
-    private void mapToString(Map<String, OutputEntry> result) {
+    private void outputMapToString(Map<String, OutputEntry> result) {
         result.entrySet().forEach(
                 e -> logger.info("{} -> {} ({})", e.getKey(), e.getValue().getValue(), e.getValue().getExportName()));
+    }
+
+    private void inputMapToString(Map<String, Object> map) {
+        map.entrySet().forEach(
+                e -> logger.info("{} -> {}", e.getKey(), e.getValue()));
     }
 
     public static void main(String[] args) {

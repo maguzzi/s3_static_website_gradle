@@ -12,9 +12,8 @@ import software.amazon.awssdk.services.cloudformation.model.Parameter;
 
 public class CreateDistributionStackCommand extends CreateStackCommand {
 
-    public static final String ZIP_DATE = "ZipDate";
     public static final String DOMAIN_NAME_PARAMETER = "DomainNameParameter";
-    public static final String S3_BUCKET_NAME_PARAMETER = "S3BucketNameParameter";
+    public static final String S3_BUCKET_FULL_NAME_PARAMETER = "S3BucketFullNameParameter";
     public static final String ALTERNATIVE_DOMAIN_NAME_PARAMETER = "AlternativeDomainNameParameter";
     public static final String BOOTSTRAP_ARTIFACT_S3_BUCKET_NAME_EXPORT_NAME = "BootstrapArtifactS3BucketNameExportName";
 
@@ -28,9 +27,9 @@ public class CreateDistributionStackCommand extends CreateStackCommand {
         parameters.add(Parameter.builder().parameterKey(App.ENVIRONMENT_PARAMETER_KEY).parameterValue(stackInfo.getEnvironmentString()).build());
         convertInputEntryToParameter(inputs,BOOTSTRAP_ARTIFACT_S3_BUCKET_NAME_EXPORT_NAME);
         convertInputEntryToParameter(inputs,ALTERNATIVE_DOMAIN_NAME_PARAMETER);
-        convertInputEntryToParameter(inputs,S3_BUCKET_NAME_PARAMETER);
+        convertInputEntryToParameter(inputs,S3_BUCKET_FULL_NAME_PARAMETER);
         convertInputEntryToParameter(inputs,DOMAIN_NAME_PARAMETER);
-        convertInputEntryToParameter(inputs,ZIP_DATE);
+        convertInputEntryToParameter(inputs,App.ZIP_DATE);
     }
 
     private void convertInputEntryToParameter(Map<String, Object> inputs,String key) {

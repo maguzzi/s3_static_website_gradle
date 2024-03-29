@@ -63,7 +63,7 @@
             "Description": "Domain Name (such as yourdomain.com)",
             "Type": "String"
         },
-        "S3BucketNameParameter": {
+        "S3BucketFullNameParameter": {
             "Description": "S3 Bucket Name (should be Domain Name-website)",
             "Type": "String"
         },
@@ -196,7 +196,7 @@
                                     "",
                                     [
                                         {
-                                            "Ref": "S3BucketNameParameter"
+                                            "Ref": "S3BucketFullNameParameter"
                                         },
                                         ".s3.us-east-1.amazonaws.com"
                                     ]
@@ -305,7 +305,7 @@
             ],
             "Properties": {
                 "Bucket": {
-                    "Ref": "S3BucketNameParameter"
+                    "Ref": "S3BucketFullNameParameter"
                 },
                 "PolicyDocument": {
                     "Id": "PolicyForCloudFrontPrivateContent",
@@ -332,7 +332,7 @@
                                     [
                                         "arn:aws:s3:::",
                                         {
-                                            "Ref": "S3BucketNameParameter"
+                                            "Ref": "S3BucketFullNameParameter"
                                         },
                                         "/*"
                                     ]
@@ -353,13 +353,7 @@
                         "-",
                         [
                             {
-                                "Ref": "S3BucketNameParameter"
-                            },
-                            {
-                                "Ref": "Environment"
-                            },
-                            {
-                                "Ref": "PseudoRandomTimestampString"
+                                "Ref": "S3BucketFullNameParameter"
                             }
                         ]
                     ]
@@ -376,6 +370,13 @@
                         "Value": {
                             "Ref": "WebsiteName"
                         }
+                    },
+                    {
+                        "Key": "s3_static_website_pseudorandomtimestampstring",
+                        "Value": {
+                            "Ref": "PseudoRandomTimestampString"
+                        }
+
                     }
                 ]
             },

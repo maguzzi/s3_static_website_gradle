@@ -4,7 +4,3 @@ $ORIGIN marcoaguzzi.cloudns.ph.
 @	3600	IN	NS	ns44.cloudns.net.
 @	3600	IN	NS	ns42.cloudns.net.
 @   3600	IN	NS	ns43.cloudns.net.
-dev 3600	IN	NS	ns-1403.awsdns-47.org.
-dev 3600	IN	NS	ns-796.awsdns-35.net.   
-dev 3600	IN	NS	ns-1563.awsdns-03.co.uk.
-dev 3600	IN	NS	ns-427.awsdns-53.com. 

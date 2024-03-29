@@ -12,7 +12,7 @@ delete: s3://s3-static-website-lambda-artifact-dev-20240317112619623/filename
 
 list of resources with the s3 static website tag
 ```
-aws resourcegroupstaggingapi get-resources --tag-filters "Key=s3_static_website,Values=My beautiful website"
+aws resourcegroupstaggingapi get-resources --tag-filters "Key=s3_static_website,Values=S3 static website project" --query='ResourceTagMappingList[*].ResourceARN'
 ```
 output: 
 ```

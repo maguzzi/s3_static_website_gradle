@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Enumeration;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -22,7 +23,10 @@ public class Utils {
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
     public String readFileContent(String pathString) throws Exception {
-        logger.info(getClass().getClassLoader().getResource(".").toURI().toString());
+        Enumeration<URL> resources = getClass().getClassLoader().getResources(".");
+        while(resources.hasMoreElements()) {
+            logger.info(resources.nextElement().toString()+pathString);    
+        }
         URL url = getClass().getClassLoader().getResource(pathString);
         logger.info("reading content from: {}", url);
         return readByteFromURL(url);

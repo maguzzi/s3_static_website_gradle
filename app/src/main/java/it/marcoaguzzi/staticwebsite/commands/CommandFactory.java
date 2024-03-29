@@ -26,7 +26,7 @@ public class CommandFactory {
         StackInfo stackInfo = StackInfo
                 .builder()
                 .environmentString(App.getEnvironment())
-                .templatePath("/bootstrap/bootstrap.json")
+                .templatePath("./bootstrap/bootstrap.json")
                 .stackName(BOOTSTRAP_STACK_NAME)
                 .psedoRandomTimestampString(App.getPsedoRandomTimestampString())
                 .build();

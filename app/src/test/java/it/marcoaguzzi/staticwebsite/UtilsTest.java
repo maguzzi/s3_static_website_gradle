@@ -8,7 +8,7 @@ public class UtilsTest {
  
     @Test
     public void testReadFileFromResource() throws Exception {
-        String fileContent = new Utils().readFileContent("utiltest.txt");
+        String fileContent = new Utils().readFileContent("./utiltest.txt");    
         assertEquals("test",fileContent);
     }
 

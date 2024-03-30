@@ -157,10 +157,10 @@ public class App {
     }
 
     private Map<String, OutputEntry> uploadLambdaTemplate(Map<String, OutputEntry> previousOutput) throws Exception {
-        String path = "./src/main/resources/distribution/lambda-edge/lambda-edge.yaml";
+        String path = "./distribution/lambda-edge/lambda-edge.yaml";
         Command uploadLambdaNestedStackTemplateFileToBucket = new UploadFileToBucketCommand(s3Client);
         HashMap<String, Object> inputs = new HashMap<String, Object>();
-        S3Params s3Params = new S3Params(previousOutput.get("CompiledTemplateBucket").getValue(),
+        S3Params s3Params = new S3Params(previousOutput.get(COMPILED_TEMPLATE_BUCKET_KEY).getValue(),
                 new SimpleDateFormat("YYYYMMddHHmmss").format(new Date()) + "_nested_lambda_stack.template", path);
         inputs.put(S3_PARAMS, s3Params);
         uploadLambdaNestedStackTemplateFileToBucket.setInputs(inputs);

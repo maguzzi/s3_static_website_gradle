@@ -27,6 +27,7 @@ public class ListStacksCommand implements Command {
     private static final String LISTED_STACKS = "LISTED_STACKS";
 
     private CloudFormationClient cloudFormationClient;
+    private static String projectName;
 
     public ListStacksCommand(CloudFormationClient cloudFormationClient) {
         this.cloudFormationClient = cloudFormationClient;
@@ -50,7 +51,7 @@ public class ListStacksCommand implements Command {
                     .stackName(stackSummary.stackName()).build();
             DescribeStacksResponse describeStacksResponse = cloudFormationClient.describeStacks(describeStacksRequest);
             List<Stack> stacks = describeStacksResponse.stacks().stream()
-                    .filter(it -> TagChecker.stackContainsTag(it.stackName(),it.tags()))
+                    .filter(it -> TagChecker.stackContainsTag(it.stackName(),it.tags(),projectName))
                     .collect(Collectors.toList());
             stacks.forEach(it -> {
                 outputMap.put(LISTED_STACKS, new OutputEntry(it.stackName(), it.stackStatusAsString()));
@@ -61,4 +62,11 @@ public class ListStacksCommand implements Command {
         App.screenMessage("LIST STACK END");
         return outputMap;
     }
+
+    @Override
+    public void setInputs(Map<String, Object> inputs) {
+        projectName = (String)inputs.get(App.S3_STATIC_WEBSITE_TAG);
+    }
+
+    
 }

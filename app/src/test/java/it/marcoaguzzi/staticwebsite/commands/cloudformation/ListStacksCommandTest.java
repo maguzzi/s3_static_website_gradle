@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +50,9 @@ public class ListStacksCommandTest {
                 .thenReturn(describeStacksResponse);
 
     ListStacksCommand listStacksCommand = new ListStacksCommand(cloudFormationClientMock);
+    Map<String,Object> inputs = new HashMap<>();
+    inputs.put(App.S3_STATIC_WEBSITE_TAG,WEBSITE_NAME);
+    listStacksCommand.setInputs(inputs);
 
     Map<String, OutputEntry> result = listStacksCommand.execute();
     assertEquals(1, result.size());
@@ -58,7 +62,8 @@ public class ListStacksCommandTest {
     private List<Tag> testTags(String websiteName,String env) {
         return Arrays.asList(
             testTag(App.S3_STATIC_WEBSITE_TAG, websiteName),
-            testTag(App.S3_STATIC_WEBSITE_ENVIRONMENT_TAG, env)
+            testTag(App.S3_STATIC_WEBSITE_ENVIRONMENT_TAG, env),
+            testTag(App.S3_STATIC_WEBSITE_TIMESTAMP_TAG,"12345")
         );
     }
 

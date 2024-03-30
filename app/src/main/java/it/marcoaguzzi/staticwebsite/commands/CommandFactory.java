@@ -3,6 +3,7 @@ package it.marcoaguzzi.staticwebsite.commands;
 import static it.marcoaguzzi.staticwebsite.commands.misc.PackageTemplateCommand.PACKAGED_TEMPLATE_PATH;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import it.marcoaguzzi.staticwebsite.App;
@@ -47,7 +48,7 @@ public class CommandFactory {
     }
 
     public static Command createZipArtifactCommand(App app) throws Exception {
-        String sourcePath = "./src/main/resources/distribution/lambda-edge/index.mjs";
+        String sourcePath = "./distribution/lambda-edge/index.mjs";
         String zipFile = String.format("lambda-edge-%s-%s.zip", App.getEnvironment(),
                 new SimpleDateFormat("yyyyMMdd").format(new Date()));
         return new ZipArtifactCommand(sourcePath, zipFile);
@@ -62,10 +63,14 @@ public class CommandFactory {
     }
 
     public static Command createList(App app) {
-        return new ListStacksCommand(app.getCloudFormationClient());
+        Map<String,Object> inputs = new HashMap<>();
+        inputs.put(App.S3_STATIC_WEBSITE_TAG,App.getWebsiteName());
+        ListStacksCommand listStacksCommand = new ListStacksCommand(app.getCloudFormationClient());
+        listStacksCommand.setInputs(inputs);
+        return listStacksCommand;
     }
 
     public static Command createPackageTemplateCommand(App app) {
-        return new PackageTemplateCommand("./src/main/resources/distribution/website-distribution.json");
+        return new PackageTemplateCommand("./distribution/website-distribution.json");
     }
 }

@@ -53,7 +53,7 @@ public class CreateStackCommand implements Command {
         App.screenMessage(String.format("%s - %s CREATION START", stackInfo.getStackName(),
                 stackInfo.getEnvironmentString()));
 
-        String templateBody = new Utils().readFileContent(stackInfo.getTemplatePath());
+        String templateBody = Utils.readFileContent(stackInfo.getTemplatePath());
 
         String stackFullName = stackInfo.getStackName() + "-" + stackInfo.getEnvironmentString();
 

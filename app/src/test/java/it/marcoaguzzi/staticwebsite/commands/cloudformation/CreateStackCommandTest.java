@@ -6,7 +6,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
@@ -20,11 +19,10 @@ public class CreateStackCommandTest {
 
     @Test
     public void testCreateWithTags() throws Exception {
-        File templateFile = File.createTempFile("template_", ".template");
         StackInfo stackInfo = StackInfo
                 .builder()
                 .environmentString("env")
-                .templatePath(templateFile.getAbsolutePath())
+                .templatePath("./bootstrap/bootstrap.json")
                 .stackName("stackName")
                 .websiteName("website")
                 .build();
@@ -52,7 +50,7 @@ public class CreateStackCommandTest {
         return new ArgumentMatcher<CreateStackRequest>() {
             @Override
             public boolean matches(CreateStackRequest argument) {
-                return TagChecker.stackContainsTag(name,argument.tags());
+                return TagChecker.stackContainsTag(name,argument.tags(),"website");
             }
         };
     }

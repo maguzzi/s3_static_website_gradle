@@ -2,7 +2,6 @@ package it.marcoaguzzi.staticwebsite;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +9,6 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Enumeration;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -22,12 +20,8 @@ public class Utils {
 
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
-    public String readFileContent(String pathString) throws Exception {
-        Enumeration<URL> resources = getClass().getClassLoader().getResources(".");
-        while(resources.hasMoreElements()) {
-            logger.info(resources.nextElement().toString()+pathString);    
-        }
-        URL url = getClass().getClassLoader().getResource(pathString);
+    public static String readFileContent(String pathString) throws Exception {
+        URL url = Utils.class.getClassLoader().getResource(pathString);
         logger.info("reading content from: {}", url);
         return readByteFromURL(url);
     }
@@ -39,7 +33,7 @@ public class Utils {
         File zipFile = new File(tmpDir.toAbsolutePath() + File.separator + zipFileName);
 
         try (
-                FileInputStream fis = new FileInputStream(fileToZip);
+                InputStream fis = Utils.class.getClassLoader().getResourceAsStream(sourceFile);
                 FileOutputStream fos = new FileOutputStream(zipFile);
                 ZipOutputStream zipOut = new ZipOutputStream(fos);) {
 

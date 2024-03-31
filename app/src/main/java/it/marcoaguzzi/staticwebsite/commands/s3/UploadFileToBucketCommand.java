@@ -1,9 +1,6 @@
 package it.marcoaguzzi.staticwebsite.commands.s3;
 
-import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.Paths;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

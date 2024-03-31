@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import it.marcoaguzzi.staticwebsite.commands.Command;
 import it.marcoaguzzi.staticwebsite.commands.CommandFactory;
+import it.marcoaguzzi.staticwebsite.commands.cloudformation.GetRoute53InfoCommand;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.OutputEntry;
 import it.marcoaguzzi.staticwebsite.commands.misc.ZipArtifactCommand;
 import it.marcoaguzzi.staticwebsite.commands.s3.S3Params;
@@ -91,11 +92,20 @@ public class App {
         Command getOutputFromBootstrapStack = CommandFactory.createGetOutputFromBootstrapStack(this);
         Command compileTemplateCommand = CommandFactory.createPackageTemplateCommand(this);
         Command zipArtifactCommand = CommandFactory.createZipArtifactCommand(this);
+        Command getRoute53InfoCommand = CommandFactory.createGetRoute53InfoCommand(this);
 
         switch (command) {
 
             case "LIST": {
                 listStacksCommand.execute();
+                break;
+            }
+
+            case "DNS_INFO": {
+                Map<String,Object> inputs = new HashMap<>();
+                inputs.put(GetRoute53InfoCommand.STACK_NAME,"s3-static-website-distribution-stack-dev");
+                getRoute53InfoCommand.setInputs(inputs);
+                getRoute53InfoCommand.execute();
                 break;
             }
 

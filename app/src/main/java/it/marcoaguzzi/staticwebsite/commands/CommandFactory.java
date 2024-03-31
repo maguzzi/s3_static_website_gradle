@@ -10,6 +10,7 @@ import it.marcoaguzzi.staticwebsite.App;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.CreateDistributionStackCommand;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.CreateStackCommand;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.GetOutputFromStack;
+import it.marcoaguzzi.staticwebsite.commands.cloudformation.GetRoute53InfoCommand;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.ListStacksCommand;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.OutputEntry;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.StackInfo;
@@ -17,6 +18,7 @@ import it.marcoaguzzi.staticwebsite.commands.misc.PackageTemplateCommand;
 import it.marcoaguzzi.staticwebsite.commands.misc.ZipArtifactCommand;
 import it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand;
 import software.amazon.awssdk.services.cloudformation.model.Capability;
+import software.amazon.awssdk.services.route53.Route53Client;
 
 public class CommandFactory {
 
@@ -72,5 +74,12 @@ public class CommandFactory {
 
     public static Command createPackageTemplateCommand(App app) {
         return new PackageTemplateCommand("./distribution/website-distribution.json");
+    }
+
+    // TODO put route 53 client in app level
+    public static Command createGetRoute53InfoCommand(App app) {
+        Route53Client route53Client = Route53Client.create();
+        GetRoute53InfoCommand getRoute53InfoCommand = new GetRoute53InfoCommand(app.getCloudFormationClient(), route53Client);
+        return getRoute53InfoCommand;
     }
 }

@@ -75,6 +75,7 @@ public class CreateStackCommand implements Command {
 
         cloudFormationClient.createStack(request);
 
+        // TODO leave it optional
         StackCompleteChecker stackCompleteChecker = new StackCompleteChecker(cloudFormationClient, stackFullName);
         stackCompleteChecker.check(new Function<String, Void>() {
             @Override
@@ -87,7 +88,7 @@ public class CreateStackCommand implements Command {
         App.screenMessage(
                 String.format("%s - %s CREATION END", stackInfo.getStackName(), stackInfo.getEnvironmentString()));
 
-        Map<String, OutputEntry> result = new HashMap<>();
+        Map<String, OutputEntry> result = new HashMap<>(); // TODO put stack name here
 
         return result;
     }

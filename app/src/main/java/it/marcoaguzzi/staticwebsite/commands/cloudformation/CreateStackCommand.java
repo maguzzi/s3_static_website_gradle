@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +18,8 @@ import it.marcoaguzzi.staticwebsite.commands.Command;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.Capability;
 import software.amazon.awssdk.services.cloudformation.model.CreateStackRequest;
+import software.amazon.awssdk.services.cloudformation.model.ListStackResourcesRequest;
+import software.amazon.awssdk.services.cloudformation.model.ListStackResourcesResponse;
 import software.amazon.awssdk.services.cloudformation.model.Parameter;
 import software.amazon.awssdk.services.cloudformation.model.Tag;
 
@@ -25,7 +30,7 @@ public class CreateStackCommand implements Command {
     private final CloudFormationClient cloudFormationClient;
     protected StackInfo stackInfo;
     protected List<Parameter> parameters;
-    protected List<Capability> capabilities=new ArrayList<>();
+    protected List<Capability> capabilities = new ArrayList<>();
 
     public CreateStackCommand(CloudFormationClient cloudFormationClient, StackInfo stackInfo) {
         this.cloudFormationClient = cloudFormationClient;
@@ -74,6 +79,28 @@ public class CreateStackCommand implements Command {
                 .build();
 
         cloudFormationClient.createStack(request);
+
+        ListStackResourcesRequest listStackResourcesRequest = ListStackResourcesRequest
+        .builder()
+        .stackName(stackFullName)
+        .build();
+        
+        ListStackResourcesResponse listStackResourcesResponse = cloudFormationClient.listStackResources(listStackResourcesRequest);
+
+        Optional<String> hostedZoneID = listStackResourcesResponse
+            .stackResourceSummaries()
+            .stream()
+            .filter(s -> "AWS::Route53::HostedZone".equals(s.resourceType()))
+            .map(s->s.physicalResourceId()).findFirst();
+
+        if (hostedZoneID.isPresent()) {    
+            logger.info("hostedZoneId: {}",hostedZoneID);
+        } else{
+            logger.error("Can't find hostedZoneID!");
+        }
+
+        /*aws route53 list-resource-record-sets --hosted-zone-id Z01234567890123456789 `
+        --query "ResourceRecordSets[?Type=='NS'].ResourceRecords" --output text*/
 
         StackCompleteChecker stackCompleteChecker = new StackCompleteChecker(cloudFormationClient, stackFullName);
         stackCompleteChecker.check(new Function<String, Void>() {

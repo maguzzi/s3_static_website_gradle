@@ -1,3 +1,7 @@
+# What's needed
+- Java 8+
+- AWS login configured
+
 $Env:LOG_LEVEL="DEBUG"
 $Env:LOG_LEVEL = "INFO"
 

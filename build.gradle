@@ -1,0 +1,55 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    // AWS 
+    implementation platform('software.amazon.awssdk:bom:2.20.56')
+    implementation 'software.amazon.awssdk:cloudformation'
+    implementation 'software.amazon.awssdk:s3'
+    implementation 'software.amazon.awssdk:route53'
+    
+    implementation platform('org.apache.logging.log4j:log4j-bom:2.20.0')
+    implementation 'org.apache.logging.log4j:log4j-slf4j2-impl'
+    implementation 'org.apache.logging.log4j:log4j-1.2-api'
+
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.16.0'
+
+	compileOnly 'org.projectlombok:lombok:1.18.30'
+	annotationProcessor 'org.projectlombok:lombok:1.18.30'
+	
+	// Use JUnit Jupiter for testing.
+    testImplementation libs.junit.jupiter
+    testImplementation 'org.mockito:mockito-core:3.+'
+    
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    
+    testCompileOnly 'org.projectlombok:lombok:1.18.30'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    // This dependency is used by the application.
+    implementation libs.guava 
+}
+
+// Apply a specific Java toolchain to ease working on different environments.
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+shadowJar {
+    mainClassName = 'it.marcoaguzzi.staticwebsite.App'
+    transform(com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer)
+}

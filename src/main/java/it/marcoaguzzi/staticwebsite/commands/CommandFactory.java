@@ -24,6 +24,7 @@ import it.marcoaguzzi.staticwebsite.commands.misc.ZipArtifactCommand;
 import it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand;
 import software.amazon.awssdk.services.cloudformation.model.Capability;
 import software.amazon.awssdk.services.route53.Route53Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 
 public class CommandFactory {
@@ -104,10 +105,11 @@ public class CommandFactory {
                     
                     bucketNames.stream().forEach(b -> 
                     app.getS3Client().listObjects(ListObjectsRequest.builder().bucket(b).build()).
-                    contents().forEach(o -> logger.info(o.key())));    
-                    
-                    //app.getS3Client().deleteObject(DeleteObjectRequest.builder().bucket(b).key(o.key()).build()))
-
+                    contents().forEach(o -> {
+                        app.getS3Client().deleteObject(DeleteObjectRequest.builder().bucket(b).key(o.key()).build());
+                        logger.info(o.key()+" deleted");
+                    }
+                    ));    
                 return new HashMap<>();
             }
             

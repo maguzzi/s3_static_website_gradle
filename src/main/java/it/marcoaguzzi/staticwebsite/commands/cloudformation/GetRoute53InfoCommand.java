@@ -24,13 +24,32 @@ public class GetRoute53InfoCommand implements Command {
 
     private static final Logger logger = LoggerFactory.getLogger(GetRoute53InfoCommand.class);
 
-    private final Route53Client route53Client;
-    private final CloudFormationClient cloudFormationClient;
-    private String stackName;
+    protected final Route53Client route53Client;
+    protected final CloudFormationClient cloudFormationClient;
+    protected String stackName;
 
     public GetRoute53InfoCommand(CloudFormationClient cloudFormationClient,Route53Client route53Client) {
         this.cloudFormationClient = cloudFormationClient;
         this.route53Client = route53Client;
+    }
+
+    protected Optional<String> getHostedZoneID() {
+        ListStackResourcesRequest listStackResourcesRequest = ListStackResourcesRequest
+        .builder()
+        .stackName(stackName)
+        .build();
+        
+        ListStackResourcesResponse listStackResourcesResponse = cloudFormationClient.listStackResources(listStackResourcesRequest);
+
+        Optional<String> first = listStackResourcesResponse
+            .stackResourceSummaries()
+            .stream()
+            .filter(s -> "AWS::Route53::HostedZone".equals(s.resourceType()))
+            .map(s->s.physicalResourceId()).findFirst();
+
+        logger.info("Got hosted zone Id {} for stack {}",first,stackName);
+
+        return first;
     }
 
     @Override
@@ -39,18 +58,7 @@ public class GetRoute53InfoCommand implements Command {
 
         App.screenMessage("ROUTE 53 INFO START");
 
-        ListStackResourcesRequest listStackResourcesRequest = ListStackResourcesRequest
-        .builder()
-        .stackName(stackName)
-        .build();
-        
-        ListStackResourcesResponse listStackResourcesResponse = cloudFormationClient.listStackResources(listStackResourcesRequest);
-
-        Optional<String> hostedZoneID = listStackResourcesResponse
-            .stackResourceSummaries()
-            .stream()
-            .filter(s -> "AWS::Route53::HostedZone".equals(s.resourceType()))
-            .map(s->s.physicalResourceId()).findFirst();
+        Optional<String> hostedZoneID = getHostedZoneID();
 
         if (hostedZoneID.isPresent()) {    
             logger.info("hostedZoneId: {}",hostedZoneID);
@@ -66,9 +74,12 @@ public class GetRoute53InfoCommand implements Command {
                 logger.error("Can't find NS records!");    
             } 
 
+
         } else{
             logger.error("Can't find hostedZoneID!");
         }
+
+        
 
         App.screenMessage("ROUTE 53 INFO END");
         return outputMap;

@@ -9,7 +9,7 @@ public class AppTest {
     @Test
     public void testAppNoCommand() {
         try {
-            new App(null, null, null);
+            new App(null, null, null,null);
             fail("Should ask for command");
         } catch (Exception e) {
             assertEquals(" - Command is required", e.getMessage());
@@ -18,7 +18,7 @@ public class AppTest {
 
     @Test
     public void testAppWithCommand() throws Exception{
-        new App(new String[] { "COMMAND" }, null, null);
+        new App(new String[] { "COMMAND" }, null, null,null);
     }
 
 }

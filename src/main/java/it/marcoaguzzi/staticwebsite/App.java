@@ -2,6 +2,7 @@ package it.marcoaguzzi.staticwebsite;
 
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
+import software.amazon.awssdk.services.route53.Route53Client;
 import software.amazon.awssdk.services.s3.S3Client;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +57,7 @@ public class App {
 
     private CloudFormationClient cloudFormationClient;
     private S3Client s3Client;
+    private Route53Client route53Client;
 
     private static String pseudoRandomTimestampString;
     private static String zipDate;
@@ -69,7 +71,7 @@ public class App {
         return staticWebsiteInfo.getWebsiteName();
     }
 
-    public App(String[] args, CloudFormationClient cloudFormationClient, S3Client s3Client) throws Exception {
+    public App(String[] args, CloudFormationClient cloudFormationClient, S3Client s3Client, Route53Client route53Client) throws Exception {
 
         if (args == null || args.length != 1) {
             String message = String.format("%s - Command is required", args != null ? Arrays.asList(args) : "");
@@ -81,6 +83,7 @@ public class App {
         
         this.cloudFormationClient = cloudFormationClient;
         this.s3Client = s3Client;
+        this.route53Client = route53Client;
 
         String command = args[0];
 
@@ -92,7 +95,7 @@ public class App {
         Command compileTemplateCommand = CommandFactory.createPackageTemplateCommand(this);
         Command zipArtifactCommand = CommandFactory.createZipArtifactCommand(this);
         Command getRoute53InfoCommand = CommandFactory.createGetRoute53InfoCommand(this);
-        Command emptyS3BucketCommand = CommandFactory.createEmptyS3BucketCommand(this);
+        Command deleteStackCommand = CommandFactory.createEmptyS3BucketCommand(this);
 
         switch (command) {
 
@@ -105,6 +108,7 @@ public class App {
             case "DNS_INFO": {
                 loadPseudoRandomTimestampString();
                 Map<String, Object> inputs = new HashMap<>();
+                // TODO environment is fixed
                 inputs.put(GetRoute53InfoCommand.STACK_NAME, "s3-static-website-distribution-stack-dev");
                 getRoute53InfoCommand.setInputs(inputs);
                 getRoute53InfoCommand.execute();
@@ -113,7 +117,11 @@ public class App {
 
             case "DELETE": {
                 loadPseudoRandomTimestampString();
-                CommandFactory.createEmptyS3BucketCommand(this).execute();
+                Map<String, Object> inputs = new HashMap<>();
+                // TODO environment is fixed
+                inputs.put(GetRoute53InfoCommand.STACK_NAME, "s3-static-website-distribution-stack-dev");
+                deleteStackCommand.setInputs(inputs);
+                deleteStackCommand.execute();
                 break;
             }
 
@@ -262,7 +270,7 @@ public class App {
     public static void main(String[] args) {
         try {
             environmentVariableChecks();
-            new App(args, CloudFormationClient.builder().region(region).build(), S3Client.create());
+            new App(args, CloudFormationClient.builder().region(region).build(), S3Client.create(), Route53Client.create());
         } catch (Exception e) {
             screenMessage("*** ERROR *** " + e.getMessage());
             e.printStackTrace();
@@ -275,6 +283,10 @@ public class App {
 
     public S3Client getS3Client() {
         return this.s3Client;
+    }
+
+    public Route53Client getRoute53Client() {
+        return this.route53Client;
     }
 
     public static final void screenMessage(String message) {

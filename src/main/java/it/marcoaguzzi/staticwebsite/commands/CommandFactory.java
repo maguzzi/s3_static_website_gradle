@@ -19,7 +19,6 @@ import it.marcoaguzzi.staticwebsite.commands.misc.PackageTemplateCommand;
 import it.marcoaguzzi.staticwebsite.commands.misc.ZipArtifactCommand;
 import it.marcoaguzzi.staticwebsite.commands.s3.UploadFileToBucketCommand;
 import software.amazon.awssdk.services.cloudformation.model.Capability;
-import software.amazon.awssdk.services.route53.Route53Client;
 
 public class CommandFactory {
 
@@ -30,7 +29,7 @@ public class CommandFactory {
         StackInfo stackInfo = StackInfo
                 .builder()
                 .environmentString(App.getEnvironment())
-                .templatePath("./bootstrap/bootstrap.json")
+                .templatePath("bootstrap/bootstrap.json")
                 .stackName(BOOTSTRAP_STACK_NAME) // TODO put some random stuff here
                 .build();
         CreateStackCommand createBootstrapStackCommand = new CreateStackCommand(app.getCloudFormationClient(), stackInfo);
@@ -72,7 +71,7 @@ public class CommandFactory {
     }
 
     public static Command createPackageTemplateCommand(App app) {
-        return new PackageTemplateCommand("./distribution/website-distribution.json");
+        return new PackageTemplateCommand("distribution/website-distribution.json");
     }
 
     // TODO put route 53 client in app level

@@ -219,10 +219,10 @@ public class App {
     private void bootstrapPseudoRandomTimestampString() throws Exception {
         Path websitesetupPath = Paths.get("./.websitesetup");
         if (!Files.exists(websitesetupPath)) {
-            logger.warn("websitesetup file does not exists. Creating");
+            logger.warn(".websitesetup file does not exists. Creating");
             Files.createFile(websitesetupPath);
         } else {
-            String message = "websitesetup file does exists. Please check your AWS environment";
+            String message = ".websitesetup file does exists. DISTRIBUTION command probably already run";
             logger.error(message);
             throw new Exception(message);
         }
@@ -231,7 +231,7 @@ public class App {
     private void loadPseudoRandomTimestampString() throws Exception {
         Path websitesetupPath = Paths.get("./.websitesetup");
         if (!Files.exists(websitesetupPath)) {
-            String message = "websitesetup file does not exists. Please check your AWS environment";
+            String message = "websitesetup file does not exists. It should have been created by DISTRIBUTION command";
             logger.error(message);
             throw new Exception(message);
         }

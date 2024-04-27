@@ -22,9 +22,9 @@ public class Utils {
 
     public static String readFileContent(String pathString) throws Exception {
         logger.info("reading content from: {}", pathString);
-        URL url = Utils.class.getClassLoader().getResource(pathString);
-        logger.info("content url: {}", url.toString());
-        return readByteFromURL(url);
+        logger.info("{}",Utils.class.getClassLoader().getResource("log4j2.xml"));
+        InputStream stream = Utils.class.getClassLoader().getResourceAsStream(pathString);
+        return readByteFromURL(stream);
     }
 
     public static String zipFile(String sourceFile, String zipFileName) throws Exception {
@@ -52,9 +52,8 @@ public class Utils {
         }
     }
 
-    private static String readByteFromURL(URL url) throws Exception {
-        try (InputStream is = url.openStream();
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    private static String readByteFromURL(InputStream is) throws Exception {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ) {
             
             byte[] bytes = new byte[1024];

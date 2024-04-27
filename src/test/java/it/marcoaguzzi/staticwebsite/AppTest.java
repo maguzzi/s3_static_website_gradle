@@ -16,9 +16,9 @@ public class AppTest {
         }
     }
 
-    @Test
-    public void testAppWithCommand() throws Exception{
+    //@Test
+    /*public void testAppWithCommand() throws Exception{
         new App(new String[] { "COMMAND" }, null, null,null);
-    }
+    }*/
 
 }

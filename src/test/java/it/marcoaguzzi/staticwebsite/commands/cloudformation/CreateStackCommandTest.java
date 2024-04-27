@@ -27,7 +27,7 @@ public class CreateStackCommandTest {
         StackInfo stackInfo = StackInfo
                 .builder()
                 .environmentString("env")
-                .templatePath("./bootstrap/bootstrap.json")
+                .templatePath("bootstrap/bootstrap.json")
                 .stackName("stackName")
                 .websiteName("website")
                 .build();

@@ -26,13 +26,17 @@ public class CreateStackCommand implements Command {
     protected StackInfo stackInfo;
     protected List<Parameter> parameters;
     protected List<Capability> capabilities = new ArrayList<>();
+    private boolean waitForCompletion;
+    private String stackFullName;
 
-    public CreateStackCommand(CloudFormationClient cloudFormationClient, StackInfo stackInfo) {
+    public CreateStackCommand(CloudFormationClient cloudFormationClient, StackInfo stackInfo,
+            Boolean waitForCompletion) {
         this.cloudFormationClient = cloudFormationClient;
         this.parameters = new ArrayList<Parameter>();
         parameters.add(parameter(App.ENVIRONMENT_PARAMETER_KEY, stackInfo.getEnvironmentString()));
         parameters.add(parameter(App.WEBSITE_NAME_PARAMETER_KEY, stackInfo.getWebsiteName()));
         this.stackInfo = stackInfo;
+        this.waitForCompletion = waitForCompletion;
     }
 
     public void addCapability(Capability capability) {
@@ -46,10 +50,11 @@ public class CreateStackCommand implements Command {
                 .parameterValue(value)
                 .build();
     }
-    
+
     @Override
     public void setInputs(Map<String, Object> inputs) {
-        parameters.add(parameter(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY, (String)inputs.get(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY)));
+        parameters.add(parameter(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY,
+                (String) inputs.get(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY)));
     }
 
     @Override
@@ -57,11 +62,11 @@ public class CreateStackCommand implements Command {
         App.screenMessage(String.format("%s - %s CREATION START", stackInfo.getStackName(),
                 stackInfo.getEnvironmentString()));
 
-        String templateBody = Utils.readFileContent(stackInfo.getTemplatePath());
+        String templateBody = Utils.readFileContentFromJar(stackInfo.getTemplatePath());
 
-        String stackFullName = stackInfo.getStackName() + "-" + stackInfo.getEnvironmentString();
+        stackFullName = stackInfo.getStackName() + "-" + stackInfo.getEnvironmentString();
 
-        logger.debug("parameters: {}",parameters);
+        logger.debug("parameters: {}", parameters);
 
         // TODO what if the parameter is not there?
         CreateStackRequest request = CreateStackRequest.builder()
@@ -75,20 +80,17 @@ public class CreateStackCommand implements Command {
                         Tag.builder().key(App.S3_STATIC_WEBSITE_ENVIRONMENT_TAG)
                                 .value(stackInfo.getEnvironmentString()).build(),
                         Tag.builder().key(App.S3_STATIC_WEBSITE_TIMESTAMP_TAG)
-                                .value(parameters.stream().filter(it->it.parameterKey().equals(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY)).findFirst().get().parameterValue()).build())
+                                .value(parameters.stream()
+                                        .filter(it -> it.parameterKey().equals(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY))
+                                        .findFirst().get().parameterValue())
+                                .build())
                 .build();
 
         cloudFormationClient.createStack(request);
 
-        // TODO leave it optional
-        StackCompleteChecker stackCompleteChecker = new StackCompleteChecker(cloudFormationClient, stackFullName);
-        stackCompleteChecker.check(new Function<String, Void>() {
-            @Override
-            public Void apply(String stackId) {
-                logger.info("Stack creation for stack id {} terminated.", stackId);
-                return null;
-            }
-        });
+        if (waitForCompletion) {
+            waitForCompletion();
+        }
 
         App.screenMessage(
                 String.format("%s - %s CREATION END", stackInfo.getStackName(), stackInfo.getEnvironmentString()));
@@ -96,6 +98,17 @@ public class CreateStackCommand implements Command {
         Map<String, OutputEntry> result = new HashMap<>(); // TODO put stack name here
 
         return result;
+    }
+
+    public void waitForCompletion() throws Exception {
+        StackCompleteChecker stackCompleteChecker = new StackCompleteChecker(cloudFormationClient, stackFullName);
+            stackCompleteChecker.check(new Function<String, Void>() {
+                @Override
+                public Void apply(String stackId) {
+                    logger.info("Stack creation for stack id {} terminated.", stackId);
+                    return null;
+                }
+            });
     }
 
 }

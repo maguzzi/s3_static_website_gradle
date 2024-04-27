@@ -45,7 +45,7 @@ public class UploadFileToBucketCommand implements Command {
         .bucket(s3Params.getS3Bucket())
         .key(s3Params.getS3Key())
         .build(),
-        RequestBody.fromString(Utils.readFileContent(s3Params.getInputPath())));
+        RequestBody.fromString(s3Params.getInputPath().startsWith("/")?Utils.readFileContentFromFile(s3Params.getInputPath()):Utils.readFileContentFromJar(s3Params.getInputPath())));
         logger.debug(putObjectResponse.toString());
         
         URL url = s3Client.utilities().getUrl(GetUrlRequest.builder().bucket(s3Params.getS3Bucket()).key(s3Params.getS3Key()).build());

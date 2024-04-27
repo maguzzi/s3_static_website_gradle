@@ -32,7 +32,7 @@ public class CommandFactory {
                 .templatePath("bootstrap/bootstrap.json")
                 .stackName(BOOTSTRAP_STACK_NAME) // TODO put some random stuff here
                 .build();
-        CreateStackCommand createBootstrapStackCommand = new CreateStackCommand(app.getCloudFormationClient(), stackInfo);
+        CreateStackCommand createBootstrapStackCommand = new CreateStackCommand(app.getCloudFormationClient(), stackInfo,true);
         return createBootstrapStackCommand;
     }
 
@@ -48,7 +48,7 @@ public class CommandFactory {
     }
 
     public static Command createZipArtifactCommand(App app) throws Exception {
-        String sourcePath = "./distribution/lambda-edge/index.mjs";
+        String sourcePath = "distribution/lambda-edge/index.mjs";
         String zipFile = String.format("lambda-edge-%s-%s.zip", App.getEnvironment(),
                 new SimpleDateFormat("yyyyMMdd").format(new Date()));
         return new ZipArtifactCommand(sourcePath, zipFile);

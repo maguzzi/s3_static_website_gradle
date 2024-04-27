@@ -20,7 +20,7 @@ public class CreateDistributionStackCommand extends CreateStackCommand {
     private static final Logger logger = LoggerFactory.getLogger(App.class);
 
     public CreateDistributionStackCommand(CloudFormationClient cloudFormationClient,StackInfo stackInfo) {
-        super(cloudFormationClient,stackInfo);
+        super(cloudFormationClient,stackInfo,false);
     }
 
     public void setInputs(Map<String,Object> inputs){
@@ -36,5 +36,7 @@ public class CreateDistributionStackCommand extends CreateStackCommand {
         logger.debug("searching for {} ==> {}",key,inputs.get(key));
         parameters.add(Parameter.builder().parameterKey(key).parameterValue(inputs.get(key).toString()).build());
     }
+    
+
 
 }

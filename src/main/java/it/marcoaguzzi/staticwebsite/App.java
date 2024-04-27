@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import it.marcoaguzzi.staticwebsite.commands.Command;
 import it.marcoaguzzi.staticwebsite.commands.CommandFactory;
+import it.marcoaguzzi.staticwebsite.commands.cloudformation.CreateDistributionStackCommand;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.GetRoute53InfoCommand;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.OutputEntry;
 import it.marcoaguzzi.staticwebsite.commands.misc.ZipArtifactCommand;
@@ -175,6 +176,12 @@ public class App {
 
             }
 
+            case "CHECK": {
+                loadPseudoRandomTimestampString();
+                CreateDistributionStackCommand distributionStackCommand = (CreateDistributionStackCommand)CommandFactory.createDistributionStack(this, new HashMap<>());
+                distributionStackCommand.waitForCompletion();
+                break;
+            }
         }
     }
 
@@ -206,7 +213,7 @@ public class App {
     }
 
     private Map<String, OutputEntry> uploadLambdaTemplate(Map<String, OutputEntry> previousOutput) throws Exception {
-        String path = "./distribution/lambda-edge/lambda-edge.yaml";
+        String path = "distribution/lambda-edge/lambda-edge.yaml";
         Command uploadLambdaNestedStackTemplateFileToBucket = new UploadFileToBucketCommand(s3Client);
         HashMap<String, Object> inputs = new HashMap<String, Object>();
         S3Params s3Params = new S3Params(previousOutput.get(COMPILED_TEMPLATE_BUCKET_KEY).getValue(),

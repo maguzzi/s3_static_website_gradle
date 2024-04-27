@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -20,11 +21,18 @@ public class Utils {
 
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
-    public static String readFileContent(String pathString) throws Exception {
+    public static String readFileContentFromJar(String pathString) throws Exception {
         logger.info("reading content from: {}", pathString);
-        logger.info("{}",Utils.class.getClassLoader().getResource("log4j2.xml"));
+        logger.info("{}",Utils.class.getClassLoader().getResource(pathString));
         InputStream stream = Utils.class.getClassLoader().getResourceAsStream(pathString);
         return readByteFromURL(stream);
+    }
+
+    public static String readFileContentFromFile(String pathString) throws Exception {
+        logger.info("reading content from: {}", pathString);
+        Path path = Paths.get(pathString);
+        logger.info("{}",path.toAbsolutePath());
+        return readByteFromURL(path.toUri().toURL().openStream());
     }
 
     public static String zipFile(String sourceFile, String zipFileName) throws Exception {

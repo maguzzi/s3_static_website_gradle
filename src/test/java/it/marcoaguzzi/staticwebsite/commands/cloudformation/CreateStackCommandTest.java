@@ -37,7 +37,7 @@ public class CreateStackCommandTest {
         when(cloudFormationClient.describeStacks(any(DescribeStacksRequest.class)))
                 .thenReturn(stackCompletedResponse());
 
-        CreateStackCommand createStack = new CreateStackCommand(cloudFormationClient, stackInfo);
+        CreateStackCommand createStack = new CreateStackCommand(cloudFormationClient, stackInfo,true);
         Map<String,Object> inputs = new HashMap<>();
         inputs.put(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY, "12345");
         createStack.setInputs(inputs);

@@ -81,7 +81,7 @@ public class CommandFactory {
     }
 
     
-    public static Command createEmptyS3BucketCommand(App app) {
+    public static Command createDeleteStackCommand(App app) {
         return new DeleteStackCommand(app.getCloudFormationClient(),app.getRoute53Client(),app.getS3Client());
     }
 }

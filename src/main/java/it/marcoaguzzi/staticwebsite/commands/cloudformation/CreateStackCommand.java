@@ -43,7 +43,7 @@ public class CreateStackCommand implements Command {
         capabilities.add(capability);
     }
 
-    private Parameter parameter(String key, String value) {
+    protected Parameter parameter(String key, String value) {
         return Parameter
                 .builder()
                 .parameterKey(key)
@@ -53,8 +53,10 @@ public class CreateStackCommand implements Command {
 
     @Override
     public void setInputs(Map<String, Object> inputs) {
+        logger.debug("setInput start");
         parameters.add(parameter(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY,
                 (String) inputs.get(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY)));
+        logger.debug("setInput end");
     }
 
     @Override
@@ -62,7 +64,7 @@ public class CreateStackCommand implements Command {
         App.screenMessage(String.format("%s - %s CREATION START", stackInfo.getStackName(),
                 stackInfo.getEnvironmentString()));
 
-        String templateBody = Utils.readFileContentFromJar(stackInfo.getTemplatePath());
+        String templateBody = Utils.readFileContent(stackInfo.getTemplatePath());
 
         stackFullName = stackInfo.getStackName() + "-" + stackInfo.getEnvironmentString();
 
@@ -100,6 +102,7 @@ public class CreateStackCommand implements Command {
         return result;
     }
 
+    //TODO does not work outside of here!
     public void waitForCompletion() throws Exception {
         StackCompleteChecker stackCompleteChecker = new StackCompleteChecker(cloudFormationClient, stackFullName);
             stackCompleteChecker.check(new Function<String, Void>() {

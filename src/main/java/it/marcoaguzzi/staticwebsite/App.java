@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import it.marcoaguzzi.staticwebsite.commands.Command;
 import it.marcoaguzzi.staticwebsite.commands.CommandFactory;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.CreateDistributionStackCommand;
+import it.marcoaguzzi.staticwebsite.commands.cloudformation.CreateStackCommand;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.GetRoute53InfoCommand;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.OutputEntry;
 import it.marcoaguzzi.staticwebsite.commands.misc.ZipArtifactCommand;
@@ -72,7 +73,7 @@ public class App {
         return staticWebsiteInfo.getWebsiteName();
     }
 
-    public App(String[] args, CloudFormationClient cloudFormationClient, S3Client s3Client, Route53Client route53Client) throws Exception {
+    public App(String[] args, CloudFormationClient cloudFormationClient, S3Client s3Client, Route53Client route53Client, String websitePropertiesPath) throws Exception {
 
         if (args == null || args.length != 1) {
             String message = String.format("%s - Command is required", args != null ? Arrays.asList(args) : "");
@@ -80,7 +81,7 @@ public class App {
             throw new Exception(message);
         }
 
-        staticWebsiteInfo = StaticWebsiteInfo.fromWebsiteProperty();
+        staticWebsiteInfo = StaticWebsiteInfo.fromWebsiteProperty(websitePropertiesPath);
         
         this.cloudFormationClient = cloudFormationClient;
         this.s3Client = s3Client;
@@ -96,7 +97,7 @@ public class App {
         Command compileTemplateCommand = CommandFactory.createPackageTemplateCommand(this);
         Command zipArtifactCommand = CommandFactory.createZipArtifactCommand(this);
         Command getRoute53InfoCommand = CommandFactory.createGetRoute53InfoCommand(this);
-        Command deleteStackCommand = CommandFactory.createEmptyS3BucketCommand(this);
+        Command deleteStackCommand = CommandFactory.createDeleteStackCommand(this);
 
         switch (command) {
 
@@ -167,6 +168,7 @@ public class App {
                         outputMap.get(ARTIFACT_S3_BUCKET).getExportName());
                 distributionInput.put(ZIP_DATE, zipDate);
                 distributionInput.put(PACKAGED_TEMPLATE_PATH, outputMap.get(PACKAGED_TEMPLATE_PATH));
+                distributionInput.put(PSEUDO_RANDOM_TIMESTAMP_STRING_KEY,pseudoRandomTimestampString);
 
                 Command distributionStackCommand = CommandFactory.createDistributionStack(this, outputMap);
                 distributionStackCommand.setInputs(distributionInput);
@@ -178,8 +180,7 @@ public class App {
 
             case "CHECK": {
                 loadPseudoRandomTimestampString();
-                CreateDistributionStackCommand distributionStackCommand = (CreateDistributionStackCommand)CommandFactory.createDistributionStack(this, new HashMap<>());
-                distributionStackCommand.waitForCompletion();
+                new CreateStackCommand(cloudFormationClient, null).waitForCompletion();
                 break;
             }
         }
@@ -242,7 +243,7 @@ public class App {
             logger.error(message);
             throw new Exception(message);
         }
-        Properties propertiesFile = Utils.readPropertiesFile(websitesetupPath);
+        Properties propertiesFile = Utils.readPropertiesFile(Utils.readFileContent(websitesetupPath.toAbsolutePath().toString()));
         String oldPRTS = propertiesFile.getProperty(App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY, "");
         String oldZipDate = propertiesFile.getProperty(App.ZIP_DATE, "");
         if ("".equals(oldPRTS)) {
@@ -277,7 +278,7 @@ public class App {
     public static void main(String[] args) {
         try {
             environmentVariableChecks();
-            new App(args, CloudFormationClient.builder().region(region).build(), S3Client.create(), Route53Client.create());
+            new App(args, CloudFormationClient.builder().region(region).build(), S3Client.create(), Route53Client.create(),"./website.properties");
         } catch (Exception e) {
             screenMessage("*** ERROR *** " + e.getMessage());
             e.printStackTrace();

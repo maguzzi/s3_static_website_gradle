@@ -9,7 +9,7 @@ public class UtilsTest {
  
     @Test
     public void testReadFileFromResource() throws Exception {
-        String fileContent = Utils.readFileContentFromJar("./test.txt");    
+        String fileContent = Utils.readFileContent("test.txt");    
         assertEquals("test",fileContent);
     }
 

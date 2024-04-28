@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,21 +18,28 @@ import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO fix file reading!!
 public class Utils {
 
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
-    public static String readFileContentFromJar(String pathString) throws Exception {
-        logger.info("reading content from: {}", pathString);
-        logger.info("{}",Utils.class.getClassLoader().getResource(pathString));
+    public static String readFileContent(String pathString) throws Exception {
+        if (pathString.startsWith(".") || pathString.startsWith("/")) {
+            return readFileContentFromFile(pathString);
+        } else {
+            return readFileContentFromJar(pathString);
+        }
+    }
+
+    private static String readFileContentFromJar(String pathString) throws Exception {
+        logger.info("reading content from jar: {}", Utils.class.getClassLoader().getResource(pathString));
         InputStream stream = Utils.class.getClassLoader().getResourceAsStream(pathString);
         return readByteFromURL(stream);
     }
 
-    public static String readFileContentFromFile(String pathString) throws Exception {
-        logger.info("reading content from: {}", pathString);
+    private static String readFileContentFromFile(String pathString) throws Exception {
         Path path = Paths.get(pathString);
-        logger.info("{}",path.toAbsolutePath());
+        logger.info("reading content from file: {}", path.toAbsolutePath());
         return readByteFromURL(path.toUri().toURL().openStream());
     }
 
@@ -75,11 +83,9 @@ public class Utils {
         }
     }
 
-    public static Properties readPropertiesFile(Path path) throws Exception {
+    public static Properties readPropertiesFile(String content) throws Exception {
         Properties properties = new Properties();
-        InputStream newInputStream = Files.newInputStream(path);
-        properties.load(new InputStreamReader(newInputStream));
-        newInputStream.close();
+        properties.load(new StringReader(content));
         return properties;
     }
 }

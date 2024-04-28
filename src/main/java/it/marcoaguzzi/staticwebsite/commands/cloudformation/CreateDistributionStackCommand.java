@@ -23,18 +23,23 @@ public class CreateDistributionStackCommand extends CreateStackCommand {
         super(cloudFormationClient,stackInfo,false);
     }
 
+    @Override
     public void setInputs(Map<String,Object> inputs){
+        logger.debug("setInput start");
+        super.setInputs(inputs);
         parameters.add(Parameter.builder().parameterKey(App.ENVIRONMENT_PARAMETER_KEY).parameterValue(stackInfo.getEnvironmentString()).build());
         convertInputEntryToParameter(inputs,BOOTSTRAP_ARTIFACT_S3_BUCKET_NAME_EXPORT_NAME);
         convertInputEntryToParameter(inputs,ALTERNATIVE_DOMAIN_NAME_PARAMETER);
         convertInputEntryToParameter(inputs,S3_BUCKET_FULL_NAME_PARAMETER);
         convertInputEntryToParameter(inputs,DOMAIN_NAME_PARAMETER);
         convertInputEntryToParameter(inputs,App.ZIP_DATE);
+        convertInputEntryToParameter(inputs,App.PSEUDO_RANDOM_TIMESTAMP_STRING_KEY);
+        logger.debug("setInput end");
     }
 
     private void convertInputEntryToParameter(Map<String, Object> inputs,String key) {
         logger.debug("searching for {} ==> {}",key,inputs.get(key));
-        parameters.add(Parameter.builder().parameterKey(key).parameterValue(inputs.get(key).toString()).build());
+        parameters.add(parameter(key, inputs.get(key).toString()));
     }
     
 

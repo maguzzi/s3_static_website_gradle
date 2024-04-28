@@ -20,10 +20,10 @@ public class StaticWebsiteInfo {
     private String websiteDomain;
     private String websiteAlternativeDomain;
 
-    public static StaticWebsiteInfo fromWebsiteProperty() throws Exception {
-        Path path = Paths.get("./website.properties");
+    public static StaticWebsiteInfo fromWebsiteProperty(String websitePropertiesPath) throws Exception {
+        String fileContent = Utils.readFileContent(websitePropertiesPath);
         try {
-            Properties propertiesFile = Utils.readPropertiesFile(path);
+            Properties propertiesFile = Utils.readPropertiesFile(fileContent);
             return StaticWebsiteInfo
                     .builder()
                     .websiteName(propertiesFile.getProperty("name"))

@@ -179,9 +179,9 @@ public class App {
             }
 
             case "CHECK": {
-                loadPseudoRandomTimestampString();
-                new CreateStackCommand(cloudFormationClient, null).waitForCompletion();
-                break;
+                // TODO not yet implemented
+                throw new Exception("not yet implemented");
+                // break;
             }
         }
     }

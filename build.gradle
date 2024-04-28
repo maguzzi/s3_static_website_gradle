@@ -38,6 +38,10 @@ dependencies {
     implementation libs.guava 
 }
 
+apply plugin: 'java'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 // Apply a specific Java toolchain to ease working on different environments.
 java {
     toolchain {

@@ -1,6 +1,8 @@
 package it.marcoaguzzi.staticwebsite.commands.s3;
 
 import java.net.URL;
+import java.nio.file.Paths;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,11 +43,19 @@ public class UploadFileToBucketCommand implements Command {
         App.screenMessage("UPLOAD FILE TO BUCKET START");
         logger.info("{} --> {}/{}",s3Params.getInputPath(),s3Params.getS3Bucket(),s3Params.getS3Key());
         
+        // TODO this is to avoid binary files loaded with text encoding, make it better
+        RequestBody requestBody;
+        if (s3Params.getInputPath().endsWith(".zip")) {
+            requestBody = RequestBody.fromFile(Paths.get(s3Params.getInputPath()));
+        } else {
+            requestBody = RequestBody.fromString(Utils.readFileContent(s3Params.getInputPath()));    
+        }
+
         PutObjectResponse putObjectResponse = s3Client.putObject(PutObjectRequest.builder()
         .bucket(s3Params.getS3Bucket())
         .key(s3Params.getS3Key())
         .build(),
-        RequestBody.fromString(Utils.readFileContent(s3Params.getInputPath())));
+        requestBody);
         logger.debug(putObjectResponse.toString());
         
         URL url = s3Client.utilities().getUrl(GetUrlRequest.builder().bucket(s3Params.getS3Bucket()).key(s3Params.getS3Key()).build());

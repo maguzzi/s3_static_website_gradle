@@ -111,7 +111,7 @@ public class App {
             case "DNS_INFO": {
                 loadPseudoRandomTimestampString();
                 Map<String, Object> inputs = new HashMap<>();
-                inputs.put(GetRoute53InfoCommand.STACK_NAME, "s3-static-website-distribution-stack-"+App.getEnvironment());
+                inputs.put(GetRoute53InfoCommand.STACK_NAME, CommandFactory.DISTRIBUTION_STACK_NAME+"-"+App.getEnvironment());
                 inputs.put(GetRoute53InfoCommand.DNS_OUT_FILE,option);
                 getRoute53InfoCommand.setInputs(inputs);
                 getRoute53InfoCommand.execute();
@@ -121,7 +121,7 @@ public class App {
             case "DELETE": {
                 loadPseudoRandomTimestampString();
                 Map<String, Object> inputs = new HashMap<>();            
-                inputs.put(GetRoute53InfoCommand.STACK_NAME, "s3-static-website-distribution-stack-"+App.getEnvironment());
+                inputs.put(GetRoute53InfoCommand.STACK_NAME, CommandFactory.DISTRIBUTION_STACK_NAME+"-"+App.getEnvironment());
                 deleteStackCommand.setInputs(inputs);
                 deleteStackCommand.execute();
                 break;

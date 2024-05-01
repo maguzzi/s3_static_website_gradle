@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import it.marcoaguzzi.staticwebsite.commands.Command;
 import it.marcoaguzzi.staticwebsite.commands.CommandFactory;
-import it.marcoaguzzi.staticwebsite.commands.cloudformation.CreateDistributionStackCommand;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.CreateStackCommand;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.GetRoute53InfoCommand;
 import it.marcoaguzzi.staticwebsite.commands.cloudformation.OutputEntry;
@@ -75,8 +74,9 @@ public class App {
 
     public App(String[] args, CloudFormationClient cloudFormationClient, S3Client s3Client, Route53Client route53Client, String websitePropertiesPath) throws Exception {
 
-        if (args == null || args.length != 1) {
-            String message = String.format("%s - Command is required", args != null ? Arrays.asList(args) : "");
+        logger.debug("args: {}",(args!=null)?Arrays.asList(args):"[]");
+        if (args == null || args.length == 0) {
+            String message = String.format("%s - Command is required", (args != null) ? Arrays.asList(args) : "");
             logger.error(message);
             throw new Exception(message);
         }
@@ -88,6 +88,7 @@ public class App {
         this.route53Client = route53Client;
 
         String command = args[0];
+        String option = (args.length>1)?args[1]:"";
 
         logger.info("Command: {} environment: {}", command, staticWebsiteInfo.getEnvironment());
 
@@ -110,8 +111,8 @@ public class App {
             case "DNS_INFO": {
                 loadPseudoRandomTimestampString();
                 Map<String, Object> inputs = new HashMap<>();
-                // TODO environment is fixed
-                inputs.put(GetRoute53InfoCommand.STACK_NAME, "s3-static-website-distribution-stack-dev");
+                inputs.put(GetRoute53InfoCommand.STACK_NAME, "s3-static-website-distribution-stack-"+App.getEnvironment());
+                inputs.put(GetRoute53InfoCommand.DNS_OUT_FILE,option);
                 getRoute53InfoCommand.setInputs(inputs);
                 getRoute53InfoCommand.execute();
                 break;
@@ -119,9 +120,8 @@ public class App {
 
             case "DELETE": {
                 loadPseudoRandomTimestampString();
-                Map<String, Object> inputs = new HashMap<>();
-                // TODO environment is fixed
-                inputs.put(GetRoute53InfoCommand.STACK_NAME, "s3-static-website-distribution-stack-dev");
+                Map<String, Object> inputs = new HashMap<>();            
+                inputs.put(GetRoute53InfoCommand.STACK_NAME, "s3-static-website-distribution-stack-"+App.getEnvironment());
                 deleteStackCommand.setInputs(inputs);
                 deleteStackCommand.execute();
                 break;
@@ -179,9 +179,8 @@ public class App {
             }
 
             case "CHECK": {
-                // TODO not yet implemented
-                throw new Exception("not yet implemented");
-                // break;
+                CreateStackCommand.waitForCompletion(cloudFormationClient, CommandFactory.DISTRIBUTION_STACK_NAME+"-"+App.getEnvironment());
+                break;
             }
         }
     }

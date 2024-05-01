@@ -91,7 +91,7 @@ public class CreateStackCommand implements Command {
         cloudFormationClient.createStack(request);
 
         if (waitForCompletion) {
-            waitForCompletion();
+            waitForCompletion(cloudFormationClient,stackFullName);
         }
 
         App.screenMessage(
@@ -103,7 +103,7 @@ public class CreateStackCommand implements Command {
     }
 
     //TODO does not work outside of here!
-    public void waitForCompletion() throws Exception {
+    public static void waitForCompletion(CloudFormationClient cloudFormationClient,String stackFullName) throws Exception {
         StackCompleteChecker stackCompleteChecker = new StackCompleteChecker(cloudFormationClient, stackFullName);
             stackCompleteChecker.check(new Function<String, Void>() {
                 @Override

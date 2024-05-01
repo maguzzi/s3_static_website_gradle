@@ -23,7 +23,7 @@ import software.amazon.awssdk.services.cloudformation.model.Capability;
 public class CommandFactory {
 
     private static final String BOOTSTRAP_STACK_NAME = "s3-static-website-bootstrap-stack";
-    private static final String DISTRIBUTION_STACK_NAME = "s3-static-website-distribution-stack";
+    public static final String DISTRIBUTION_STACK_NAME = "s3-static-website-distribution-stack";
 
     public static Command createBootstrapStack(App app) {
         StackInfo stackInfo = StackInfo
@@ -74,12 +74,10 @@ public class CommandFactory {
         return new PackageTemplateCommand("distribution/website-distribution.json");
     }
 
-    // TODO put route 53 client in app level
     public static Command createGetRoute53InfoCommand(App app) {
-        GetRoute53InfoCommand getRoute53InfoCommand = new GetRoute53InfoCommand(app.getCloudFormationClient(), app.getRoute53Client());
-        return getRoute53InfoCommand;
+        return new GetRoute53InfoCommand(app.getCloudFormationClient(), app.getRoute53Client());
+        
     }
-
     
     public static Command createDeleteStackCommand(App app) {
         return new DeleteStackCommand(app.getCloudFormationClient(),app.getRoute53Client(),app.getS3Client());

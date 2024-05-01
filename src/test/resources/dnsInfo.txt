@@ -1,0 +1,1 @@
+sampleEnvironent	3600	IN	NS	ns-12345.awsdns-00.co.uk.

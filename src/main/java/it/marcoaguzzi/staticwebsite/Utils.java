@@ -5,9 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,11 +16,16 @@ import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO fix file reading!!
 public class Utils {
 
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
+    /**
+     * TODO the choice for reading file in the jar or outside should be made better
+     * @param pathString
+     * @return
+     * @throws Exception
+     */
     public static String readFileContent(String pathString) throws Exception {
         if (pathString.startsWith(".") || pathString.startsWith("/")) {
             return readFileContentFromFile(pathString);

@@ -97,7 +97,8 @@ public class CreateStackCommand implements Command {
         App.screenMessage(
                 String.format("%s - %s CREATION END", stackInfo.getStackName(), stackInfo.getEnvironmentString()));
 
-        Map<String, OutputEntry> result = new HashMap<>(); // TODO put stack name here
+        // TODO put stack name here
+        Map<String, OutputEntry> result = new HashMap<>(); 
 
         return result;
     }

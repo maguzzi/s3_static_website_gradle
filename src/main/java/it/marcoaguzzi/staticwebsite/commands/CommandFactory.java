@@ -30,7 +30,7 @@ public class CommandFactory {
                 .builder()
                 .environmentString(App.getEnvironment())
                 .templatePath("bootstrap/bootstrap.json")
-                .stackName(BOOTSTRAP_STACK_NAME) // TODO put some random stuff here
+                .stackName(BOOTSTRAP_STACK_NAME) // TODO maybe put some random stuff here
                 .build();
         CreateStackCommand createBootstrapStackCommand = new CreateStackCommand(app.getCloudFormationClient(), stackInfo,true);
         return createBootstrapStackCommand;

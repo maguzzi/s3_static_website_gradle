@@ -25,6 +25,7 @@ public class ZipArtifactCommand implements Command {
         this.zipFile = zipFile;
     }
 
+    // TODO check log levels
     @Override
     public Map<String, OutputEntry> execute() throws Exception {
         App.screenMessage("ZIP ARTIFACT START");

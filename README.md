@@ -1,4 +1,4 @@
-# S3 static website architecture generator tool.
+# S3 static website architecture generator tool
 
 ## What's needed?
 
@@ -111,10 +111,10 @@ and the output:
 2024-05-01T14:15:41 [main] INFO  - Got hosted zone Id Optional[Z******] for stack s3-static-website-distribution-stack-dev
 2024-05-01T14:15:41 [main] INFO  - hostedZoneId: Optional[Z*****]
 2024-05-01T14:15:41 [main] INFO  - Name: dev.s3staticwebsitetest.cloudns.ch. TTL: 172800
-2024-05-01T14:15:41 [main] INFO  - ns-1333.awsdns-38.org.
-2024-05-01T14:15:41 [main] INFO  - ns-1572.awsdns-04.co.uk.
-2024-05-01T14:15:41 [main] INFO  - ns-844.awsdns-41.net.
-2024-05-01T14:15:41 [main] INFO  - ns-458.awsdns-57.com.
+2024-05-01T14:15:41 [main] INFO  - ns-1111.awsdns-11.org.
+2024-05-01T14:15:41 [main] INFO  - ns-1222.awsdns-22.co.uk.
+2024-05-01T14:15:41 [main] INFO  - ns-333.awsdns-33.net.
+2024-05-01T14:15:41 [main] INFO  - ns-444.awsdns-44.com.
 2024-05-01T14:15:41 [main] INFO  - 
 2024-05-01T14:15:41 [main] INFO  -  -- ROUTE 53 INFO END --
 2024-05-01T14:15:41 [main] INFO  - 
@@ -177,4 +177,4 @@ aws s3 cp index.html s3 bucket
 And then you can point the browser to http://dev.s3staticwebsitetest.cloudns.ch and see that it worked!
 
 # What's next?
-In the next post, we'll integrate the CICD pipeline that uploads the website content, along with some consideration about how to delete the stack without using the UI. Cloudformation and Cloudfront force some contraints on how the resources should be deleted, so it's worth spending some time on it.
+The CICD pipeline that uploads the website content, along with some consideration about how to delete the stack without using the UI. Cloudformation and Cloudfront force some contraints on how the resources should be deleted, so it's worth spending some time on it.

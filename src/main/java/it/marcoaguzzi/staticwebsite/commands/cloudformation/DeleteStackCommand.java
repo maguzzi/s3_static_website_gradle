@@ -14,6 +14,8 @@ import it.marcoaguzzi.staticwebsite.App;
 import it.marcoaguzzi.staticwebsite.commands.CommandFactory;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.DeleteStackRequest;
+import software.amazon.awssdk.services.cloudformation.model.DescribeStacksRequest;
+import software.amazon.awssdk.services.cloudformation.model.Stack;
 import software.amazon.awssdk.services.route53.Route53Client;
 import software.amazon.awssdk.services.route53.model.Change;
 import software.amazon.awssdk.services.route53.model.ChangeAction;
@@ -26,6 +28,8 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListBucketsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+import software.amazon.awssdk.services.cloudfront.CloudFrontClient;
+import software.amazon.awssdk.services.cloudfront.model.*;
 
 public class DeleteStackCommand extends GetRoute53InfoCommand {
 
@@ -116,5 +120,61 @@ public class DeleteStackCommand extends GetRoute53InfoCommand {
         // removeLambdaFunctionAssociation(); // this seems immediate, but not enough to
         // delete the stack
         return new HashMap<>();
+    }
+
+    private void removeLambdaFunctionAssociation() throws Exception {
+        List<Stack> stacks = cloudFormationClient.describeStacks(
+                DescribeStacksRequest
+                        .builder()
+                        .stackName(CommandFactory.DISTRIBUTION_STACK_NAME + "-" + App.getEnvironment())
+                        .build())
+                .stacks();
+
+        // TODO should be one and one stack only
+        if (stacks.size() != 1) {
+            throw new Exception("There should be only one stack for " + CommandFactory.DISTRIBUTION_STACK_NAME + "-"
+                    + App.getEnvironment());
+        }
+
+        Optional<String> cloudfrontDistributionOpt = stacks.get(0).outputs().stream()
+                .filter(it -> "CloudFrontDistributionId".equals(it.outputKey())).map(it -> it.outputValue())
+                .findFirst();
+        if (!cloudfrontDistributionOpt.isPresent()) {
+            throw new Exception("can't find distribution id");
+        } else {
+            CloudFrontClient cloudFrontClient = CloudFrontClient.builder().build();
+
+            GetDistributionResponse getDistributionResponse = cloudFrontClient
+                    .getDistribution(GetDistributionRequest.builder().id(cloudfrontDistributionOpt.get()).build());
+
+            Distribution distribution = getDistributionResponse.distribution();
+            String eTag = getDistributionResponse.eTag();
+
+            logger.info("Cloudfront distribution ID {} - {}", cloudfrontDistributionOpt.get(),
+                    distribution.domainName());
+
+            logger.trace("distribution config as is: {}", distribution.distributionConfig());
+
+            DistributionConfig distributionConfigToBe = distribution
+                    .distributionConfig()
+                    .copy(b -> b.defaultCacheBehavior(
+                            distribution.distributionConfig().defaultCacheBehavior()
+                                    .copy(d -> d.lambdaFunctionAssociations(
+                                            LambdaFunctionAssociations.builder().quantity(0).build()))));
+
+            logger.trace("distribution config to be: {}", distributionConfigToBe);
+
+            logger.trace("{}", distributionConfigToBe.equals(distribution.distributionConfig()));
+
+            logger.info("updating distribution to remove lambda function associations {} - {}",
+                    cloudfrontDistributionOpt.get(), eTag);
+            cloudFrontClient.updateDistribution(UpdateDistributionRequest
+                    .builder()
+                    .id(cloudfrontDistributionOpt.get())
+                    .ifMatch(eTag)
+                    .distributionConfig(distributionConfigToBe)
+                    .build());
+            logger.info("done");
+        }
     }
 }

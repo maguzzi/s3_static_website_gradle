@@ -1,3 +1,4 @@
+
 # Secure, fast, and free-ish Java tool for AWS S3 static websites
 
 ## Requirements
@@ -14,6 +15,7 @@ domain = dev.s3staticwebsitetest.cloudns.ch
 Let's set the LOG_LEVEL to INFO in order not to clog the shell, and check the existing stack in our AWS account:
 
 ### DISTRIBUTION
+
 Expecting the aws account still without this infrastructure, this is the first command to run:
 
 ```
@@ -88,7 +90,9 @@ It then continues to prepare the files that will be needed for the distribution 
 In the log it can be seen that zip files for artifacts are loaded onto S3, and then the template with the sub-stack reference is packaged and put into a temporary folder before the create-stack command is issued.
 Since we're using a free domain, the tool stops here because cloudformation can't complete its creation without configuring the domain provider (cloudns in this case). So let's check the DNS information that has to be provided to the cloudns:
 ```
+
 ### DNS_INFO
+
 java -jar s3_static_website_gradle-all.jar DNS_INFO dns-info.txt
 ```
 and the output:
@@ -120,7 +124,9 @@ The tool conventiently outputs the DNS information (last 4 lines) in the file *d
 It can be uploaded as-is on the cloudns web ui.
 Once that the DNS provider has propagated the DNS records provided by AWS, the tool can be started again to check if the distribution stack has been completed.
 ```
+
 ### CHECK
+
 java -jar s3_static_website_gradle-all.jar CHECK
 ```
 The output is pretty straightforward:
@@ -136,7 +142,9 @@ The output is pretty straightforward:
 2024-05-01T14:26:32 [main] INFO  - Stack s3-static-website-distribution-stack-dev not yet completed, wait
 2024-05-01T14:26:42 [main] INFO  - Stack creation for stack id arn:aws:cloudformation:us-east-1:****:stack/s3-static-website-distribution-stack-dev/****** terminated.
 ```
+
 ### LIST 
+
 Now we can list the stacks that have been created, along with their tags. As you can see, the random string that has been setup in the beginning has been propagated onto all the stacks, along with the S3 buckets and all the taggable resources.
 ```
 java -jar s3_static_website_gradle-all.jar LIST
